@@ -1,29 +1,23 @@
-import * as t from "../ad";
-import * as tq from "../ad_quantile";
-import * as q from "../../../qtopology";
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const t = require("../ad");
+const tq = require("../ad_quantile");
+const q = require("../../../qtopology");
 const DETECTOR_TYPE = "quantile.simple";
-export class AnomalyDetectorQuantileBolt implements q.Bolt {
-
-    private inner: t.ADEngineScalar;
-    private emit_cb: q.BoltEmitCallback;
-    private transform_helper: q.TransformHelper;
-    private detector_postfix: string;
-
+class AnomalyDetectorQuantileBolt {
     constructor() {
         this.inner = null;
         this.emit_cb = null;
         this.transform_helper = null;
         this.detector_postfix = null;
     }
-
-    init(name: string, config: any, _context: any, callback: q.SimpleCallback) {
+    init(name, config, _context, callback) {
         this.emit_cb = config.onEmit;
         this.detector_postfix = "." + name;
-        let threshold_low: number | null = config.threshold_low;
-        let threshold_high: number | null = config.threshold_high;
-        let factory: t.IADProviderScalarFactory = {
-            create: function (): t.IADProviderScalar {
+        let threshold_low = config.threshold_low;
+        let threshold_high = config.threshold_high;
+        let factory = {
+            create: function () {
                 return new tq.QuantileAD2(threshold_low, threshold_high);
             }
         };
@@ -34,14 +28,11 @@ export class AnomalyDetectorQuantileBolt implements q.Bolt {
         });
         callback();
     }
-
     heartbeat() { }
-
-    shutdown(callback: q.SimpleCallback) {
+    shutdown(callback) {
         callback();
     }
-
-    receive(data: any, _stream_id: string, callback: q.SimpleCallback) {
+    receive(data, _stream_id, callback) {
         const new_data = this.transform_helper.transform(data);
         let a = this.inner.test(new_data.name, new_data.value);
         this.inner.add(new_data.name, new_data.value);
@@ -54,8 +45,10 @@ export class AnomalyDetectorQuantileBolt implements q.Bolt {
                 extra_data: a
             };
             this.emit_cb(alert, null, callback);
-        } else {
+        }
+        else {
             callback();
         }
     }
 }
+exports.AnomalyDetectorQuantileBolt = AnomalyDetectorQuantileBolt;
