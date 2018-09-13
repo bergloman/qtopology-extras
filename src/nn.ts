@@ -22,8 +22,8 @@ export class NN {
     constructor(params?: NNParams) {
         params = params || { min_len: 0, max_len: -1 };
         this.dictionary = params.dictionary || new EventDictionary();
-        this.min_len = params.min_len;
-        this.max_len = params.max_len;
+        this.min_len = params.min_len || -1;
+        this.max_len = params.max_len || -1;
         this.k = params.k || 1;
         this.window = [];
         this.curr_index = 0;

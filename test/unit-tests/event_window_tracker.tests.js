@@ -3,8 +3,8 @@
 /*global describe, it, before, beforeEach, after, afterEach */
 
 const assert = require("assert");
-const assertUtils = require("./test-utils");
-const ewt = require("../../built/event_window_tracker");
+//const assertUtils = require("./test-utils");
+const ewt = require("../../built/index");
 
 describe('EventWindowTracker', function () {
     describe('simple', function () {
