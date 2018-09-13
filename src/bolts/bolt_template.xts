@@ -1,0 +1,29 @@
+import * as q from "../../../qtopology";
+
+export class EventWindowBolt implements q.Bolt {
+
+    private emit_cb: q.BoltEmitCallback;
+
+    constructor() {
+        this.emit_cb = null;
+    }
+
+    init(_name: string, config: any, _context: any, callback: q.SimpleCallback) {
+        this.emit_cb = config.onEmit;
+        callback();
+    }
+
+    heartbeat() { }
+
+    shutdown(callback: q.SimpleCallback) {
+        callback();
+    }
+
+    receive(data: any, _stream_id: string, callback: q.SimpleCallback) {
+        if (false) {
+            this.emit_cb(data, null, callback);
+        } else {
+            callback();
+        }
+    }
+}

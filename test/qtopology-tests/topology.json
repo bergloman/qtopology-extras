@@ -1,0 +1,79 @@
+{
+    "general": {
+        "heartbeat": 1000,
+        "pass_binary_messages": true
+    },
+    "spouts": [
+        {
+            "name": "pump1",
+            "type": "sys",
+            "working_dir": "",
+            "cmd": "file_reader",
+            "init": {
+                "file_format": "json",
+                "file_name": "data.ldjson"
+            }
+        }
+    ],
+    "bolts": [
+        {
+            "name": "bolt_date",
+            "working_dir": ".",
+            "type": "sys",
+            "cmd": "date_transform",
+            "inputs": [{ "source": "pump1" }],
+            "init": {
+                "date_transform_fields": ["ts"]
+            }
+        },
+        {
+            "name": "bolt_processing_ew",
+            "working_dir": "../../tolmin",
+            "type": "module_method",
+            "cmd": "createBolts",
+            "subtype": "event_window",
+            "inputs": [{ "source": "bolt_date" }],
+            "init": {
+                "window_len": 2
+            }
+        },
+        {
+            "name": "bolt_processing_nn",
+            "working_dir": "../../tolmin",
+            "type": "module_method",
+            "cmd": "createBolts",
+            "subtype": "nn",
+            "inputs": [{ "source": "bolt_processing_ew" }],
+            "init": {
+                "min_len": 10,
+                "k": 2
+            }
+        },
+        {
+            "name": "bolt_processing_ad",
+            "working_dir": "../../tolmin",
+            "type": "module_method",
+            "cmd": "createBolts",
+            "subtype": "quantile_ad",
+            "inputs": [{ "source": "bolt_processing_nn" }],
+            "init": {
+                "threshold_low": 0.01,
+                "threshold_high": 0.99
+            }
+        },
+        {
+            "name": "bolt1",
+            "working_dir": ".",
+            "type": "sys",
+            "cmd": "console",
+            "inputs": [
+                { "source": "bolt_date" },
+                { "source": "bolt_processing_ew" },
+                { "source": "bolt_processing_nn" },
+                { "source": "bolt_processing_ad" }
+            ],
+            "init": {}
+        }
+    ],
+    "variables": {}
+}

@@ -1,0 +1,27 @@
+{
+    "compilerOptions": {
+        "outDir": "./built",
+        "allowJs": false,
+        "declaration": true,
+        "sourceMap": false,
+        "target": "es6",
+        "lib":["es2016"],
+        "module": "commonjs",
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+        "alwaysStrict": true,
+        "diagnostics": false,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "pretty": false,
+        "types": [
+            "node"
+        ],
+        "typeRoots": [
+            "node_modules/@types"
+        ]
+    },
+    "include": [
+        "./src/**/*"
+    ]
+}
