@@ -3,6 +3,7 @@ import * as tq from "../ad_quantile";
 import * as q from "../../../qtopology";
 
 const DETECTOR_TYPE = "quantile.simple";
+
 export class AnomalyDetectorQuantileBolt implements q.Bolt {
 
     private inner: t.ADEngineScalar;
