@@ -1,5 +1,6 @@
 import * as q from "../../../qtopology";
 export declare class AnomalyDetectorQuantileBolt implements q.Bolt {
+    private count_before_active;
     private inner;
     private emit_cb;
     private transform_helper;

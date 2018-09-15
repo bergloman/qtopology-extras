@@ -6,12 +6,14 @@ const DETECTOR_TYPE = "quantile.simple";
 
 export class AnomalyDetectorQuantileBolt implements q.Bolt {
 
+    private count_before_active: number;
     private inner: t.ADEngineScalar;
     private emit_cb: q.BoltEmitCallback;
     private transform_helper: q.TransformHelper;
     private detector_postfix: string;
 
     constructor() {
+        this.count_before_active = 100;
         this.inner = null;
         this.emit_cb = null;
         this.transform_helper = null;
@@ -21,8 +23,9 @@ export class AnomalyDetectorQuantileBolt implements q.Bolt {
     init(name: string, config: any, _context: any, callback: q.SimpleCallback) {
         this.emit_cb = config.onEmit;
         this.detector_postfix = "." + name;
-        let threshold_low: number | null = config.threshold_low;
-        let threshold_high: number | null = config.threshold_high;
+        this.count_before_active = config.min_count || 100;
+        let threshold_low: number = config.threshold_low || -1;
+        let threshold_high: number = config.threshold_high || 2;
         let factory: t.IADProviderScalarFactory = {
             create: function (): t.IADProviderScalar {
                 return new tq.QuantileAD2(threshold_low, threshold_high);
@@ -43,10 +46,12 @@ export class AnomalyDetectorQuantileBolt implements q.Bolt {
     }
 
     receive(data: any, _stream_id: string, callback: q.SimpleCallback) {
+        this.count_before_active--;
         const new_data = this.transform_helper.transform(data);
         let a = this.inner.test(new_data.name, new_data.value);
         this.inner.add(new_data.name, new_data.value);
-        if (a.is_anomaly) {
+        if (this.count_before_active < 0 && a.is_anomaly) {
+            this.count_before_active = -1;
             let alert = {
                 ts: data.ts,
                 type: DETECTOR_TYPE,

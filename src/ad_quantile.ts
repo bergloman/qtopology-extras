@@ -33,10 +33,10 @@ export class QuantileAD {
 export class QuantileAD2 {
 
     private td: any;
-    private threshold_low?: number;
-    private threshold_high?: number;
+    private threshold_low: number;
+    private threshold_high: number;
 
-    constructor(threshold_low?: number, threshold_high?: number) {
+    constructor(threshold_low: number, threshold_high: number) {
         this.td = new tdigest.TDigest();
         this.threshold_low = threshold_low;
         this.threshold_high = threshold_high;
@@ -50,8 +50,8 @@ export class QuantileAD2 {
         let cdf = this.td.p_rank(sample);
         return {
             is_anomaly:
-                (this.threshold_low != null && cdf < this.threshold_low) ||
-                (this.threshold_high != null && cdf > this.threshold_high),
+                (cdf < this.threshold_low) ||
+                (cdf > this.threshold_high),
             cdf: cdf
         };
     }

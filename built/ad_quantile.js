@@ -38,8 +38,8 @@ class QuantileAD2 {
     test(sample) {
         let cdf = this.td.p_rank(sample);
         return {
-            is_anomaly: (this.threshold_low != null && cdf < this.threshold_low) ||
-                (this.threshold_high != null && cdf > this.threshold_high),
+            is_anomaly: (cdf < this.threshold_low) ||
+                (cdf > this.threshold_high),
             cdf: cdf
         };
     }

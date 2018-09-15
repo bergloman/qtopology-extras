@@ -13,9 +13,9 @@ export declare class QuantileAD {
  */
 export declare class QuantileAD2 {
     private td;
-    private threshold_low?;
-    private threshold_high?;
-    constructor(threshold_low?: number, threshold_high?: number);
+    private threshold_low;
+    private threshold_high;
+    constructor(threshold_low: number, threshold_high: number);
     add(sample: number): void;
     test(sample: number): any;
 }
