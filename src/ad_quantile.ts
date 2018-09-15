@@ -33,23 +33,32 @@ export class QuantileAD {
 export class QuantileAD2 {
 
     private td: any;
+    private cnt_before_active: number;
     private threshold_low: number;
     private threshold_high: number;
 
-    constructor(threshold_low: number, threshold_high: number) {
+    constructor(min_count: number, threshold_low: number, threshold_high: number) {
         this.td = new tdigest.TDigest();
+        this.cnt_before_active = min_count;
         this.threshold_low = threshold_low;
         this.threshold_high = threshold_high;
     }
 
     add(sample: number): void {
         this.td.push(sample);
+        if (this.cnt_before_active > 0) {
+            this.cnt_before_active--;
+        }
     }
 
     test(sample: number): any {
         let cdf = this.td.p_rank(sample);
+        if (this.cnt_before_active > 0) {
+            return { is_anomaly: false, cdf: cdf };
+        }
         return {
             is_anomaly:
+
                 (cdf < this.threshold_low) ||
                 (cdf > this.threshold_high),
             cdf: cdf

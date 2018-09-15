@@ -6,7 +6,6 @@ const q = require("../../../qtopology");
 const DETECTOR_TYPE = "quantile.simple";
 class AnomalyDetectorQuantileBolt {
     constructor() {
-        this.count_before_active = 100;
         this.inner = null;
         this.emit_cb = null;
         this.transform_helper = null;
@@ -15,12 +14,12 @@ class AnomalyDetectorQuantileBolt {
     init(name, config, _context, callback) {
         this.emit_cb = config.onEmit;
         this.detector_postfix = "." + name;
-        this.count_before_active = config.min_count || 100;
+        let min_count = config.min_count || 100;
         let threshold_low = config.threshold_low || -1;
         let threshold_high = config.threshold_high || 2;
         let factory = {
             create: function () {
-                return new tq.QuantileAD2(threshold_low, threshold_high);
+                return new tq.QuantileAD2(min_count, threshold_low, threshold_high);
             }
         };
         this.inner = new t.ADEngineScalar(factory);
@@ -35,12 +34,10 @@ class AnomalyDetectorQuantileBolt {
         callback();
     }
     receive(data, _stream_id, callback) {
-        this.count_before_active--;
         const new_data = this.transform_helper.transform(data);
         let a = this.inner.test(new_data.name, new_data.value);
         this.inner.add(new_data.name, new_data.value);
-        if (this.count_before_active < 0 && a.is_anomaly) {
-            this.count_before_active = -1;
+        if (a.is_anomaly) {
             let alert = {
                 ts: data.ts,
                 type: DETECTOR_TYPE,

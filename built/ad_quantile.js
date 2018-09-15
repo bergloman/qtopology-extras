@@ -27,16 +27,23 @@ exports.QuantileAD = QuantileAD;
  * Quantile anomaly detector, using public TDigest library.
  */
 class QuantileAD2 {
-    constructor(threshold_low, threshold_high) {
+    constructor(min_count, threshold_low, threshold_high) {
         this.td = new tdigest.TDigest();
+        this.cnt_before_active = min_count;
         this.threshold_low = threshold_low;
         this.threshold_high = threshold_high;
     }
     add(sample) {
         this.td.push(sample);
+        if (this.cnt_before_active > 0) {
+            this.cnt_before_active--;
+        }
     }
     test(sample) {
         let cdf = this.td.p_rank(sample);
+        if (this.cnt_before_active > 0) {
+            return { is_anomaly: false, cdf: cdf };
+        }
         return {
             is_anomaly: (cdf < this.threshold_low) ||
                 (cdf > this.threshold_high),
