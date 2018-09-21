@@ -38,3 +38,50 @@ class Ema {
     }
 }
 exports.Ema = Ema;
+class RunningStats {
+    constructor() {
+        this.n = 0;
+        this.avg = 0;
+        this.m2 = 0;
+    }
+    add(x) {
+        this.n++;
+        const delta = x - this.avg;
+        this.avg += delta / this.n;
+        const delta2 = x - this.avg;
+        this.m2 += delta * delta2;
+    }
+    getAvg() { return this.avg; }
+    getVar() {
+        if (this.n < 2)
+            return 0;
+        return this.m2 / (this.n - 1);
+    }
+    getStdDev() { return Math.sqrt(this.getVar()); }
+    getStats() {
+        return {
+            avg: this.getAvg(),
+            stdDev: this.getStdDev(),
+            var: this.getVar()
+        };
+    }
+}
+exports.RunningStats = RunningStats;
+class ZScore {
+    constructor() {
+        this.stats = new RunningStats();
+    }
+    add(x) {
+        // prior variance
+        const curr = this.stats.getStats();
+        this.stats.add(x);
+        //return result
+        if (curr.var == 0)
+            return NaN;
+        return Math.abs(curr.avg - x) / curr.stdDev;
+    }
+}
+exports.ZScore = ZScore;
+class ZScoreAD {
+}
+exports.ZScoreAD = ZScoreAD;

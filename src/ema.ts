@@ -1,4 +1,4 @@
- /** Internal calculation of exponential moving average */
+/** Internal calculation of exponential moving average */
 function ema(alpha: number, sample: number, prevSample: number, deltaTime: number, emaPrev: number) {
     let a = deltaTime / alpha;
     let u = Math.exp(a * -1);
@@ -52,3 +52,60 @@ export class Ema {
     }
 }
 
+export class RunningStats {
+    private n: number;
+    private avg: number;
+    private m2: number;
+
+    constructor() {
+        this.n = 0;
+        this.avg = 0;
+        this.m2 = 0;
+    }
+
+    public add(x: number): void {
+        this.n++;
+        const delta = x - this.avg;
+        this.avg += delta / this.n;
+        const delta2 = x - this.avg;
+        this.m2 += delta * delta2;
+    }
+
+    public getAvg(): number { return this.avg; }
+    public getVar(): number {
+        if (this.n < 2) return 0;
+        return this.m2 / (this.n - 1);
+    }
+    public getStdDev(): number { return Math.sqrt(this.getVar()); }
+    public getStats() {
+        return {
+            avg: this.getAvg(),
+            stdDev: this.getStdDev(),
+            var: this.getVar()
+        };
+    }
+}
+
+export class ZScore {
+    private stats: RunningStats;
+
+    constructor() {
+        this.stats = new RunningStats();
+    }
+
+    public add(x: number): number {
+
+        // prior variance
+        const curr = this.stats.getStats();
+
+        this.stats.add(x);
+
+        //return result
+        if (curr.var == 0) return NaN;
+        return Math.abs(curr.avg - x) / curr.stdDev;
+    }
+}
+
+export class ZScoreAD {
+
+}
