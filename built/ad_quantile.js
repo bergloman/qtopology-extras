@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const qm = require("qminer");
 const tdigest = require("tdigest");
+const ema_1 = require("./ema");
 /**
  * Quantile anomaly detector, using QMiner's GK algorithm.
  * NOT WORKING ATM
@@ -52,3 +53,30 @@ class QuantileAD2 {
     }
 }
 exports.QuantileAD2 = QuantileAD2;
+/**
+ * ZScore anomaly detector.
+ */
+class ZScoreAD {
+    constructor(min_count, threshold_z) {
+        this.cnt_before_active = min_count;
+        this.threshold_z = threshold_z;
+        this.zs = new ema_1.ZScore();
+    }
+    add(sample) {
+        if (this.cnt_before_active > 0) {
+            this.cnt_before_active--;
+        }
+        this.zs.add(sample);
+    }
+    test(x) {
+        let z = this.zs.test(x);
+        if (this.cnt_before_active > 0) {
+            return { is_anomaly: false, z: 0 };
+        }
+        return {
+            is_anomaly: (z > this.threshold_z),
+            cdf: z
+        };
+    }
+}
+exports.ZScoreAD = ZScoreAD;

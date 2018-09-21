@@ -104,8 +104,10 @@ export class ZScore {
         if (curr.var == 0) return NaN;
         return Math.abs(curr.avg - x) / curr.stdDev;
     }
-}
 
-export class ZScoreAD {
-
+    public test(x: number): number {
+        const curr = this.stats.getStats();
+        if (curr.var == 0) return NaN;
+        return Math.abs(curr.avg - x) / curr.stdDev;
+    }
 }

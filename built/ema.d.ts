@@ -32,6 +32,5 @@ export declare class ZScore {
     private stats;
     constructor();
     add(x: number): number;
-}
-export declare class ZScoreAD {
+    test(x: number): number;
 }

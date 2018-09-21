@@ -1,11 +1,13 @@
 import * as qm from "qminer";
 import * as tdigest from "tdigest";
+import { IADProviderScalar } from "./ad";
+import { ZScore } from "./ema";
 
 /**
  * Quantile anomaly detector, using QMiner's GK algorithm.
  * NOT WORKING ATM
  */
-export class QuantileAD {
+export class QuantileAD implements IADProviderScalar {
 
     private gk: any;
 
@@ -30,7 +32,7 @@ export class QuantileAD {
 /**
  * Quantile anomaly detector, using public TDigest library.
  */
-export class QuantileAD2 {
+export class QuantileAD2 implements IADProviderScalar {
 
     private td: any;
     private cnt_before_active: number;
@@ -66,3 +68,38 @@ export class QuantileAD2 {
     }
 }
 
+
+
+/**
+ * ZScore anomaly detector.
+ */
+export class ZScoreAD implements IADProviderScalar {
+
+    private cnt_before_active: number;
+    private threshold_z: number;
+    private zs: ZScore;
+
+    constructor(min_count: number, threshold_z: number) {
+        this.cnt_before_active = min_count;
+        this.threshold_z = threshold_z;
+        this.zs = new ZScore();
+    }
+
+    add(sample: number): void {
+        if (this.cnt_before_active > 0) {
+            this.cnt_before_active--;
+        }
+        this.zs.add(sample);
+    }
+
+    test(x: number): any {
+        let z = this.zs.test(x);
+        if (this.cnt_before_active > 0) {
+            return { is_anomaly: false, z: 0 };
+        }
+        return {
+            is_anomaly: (z > this.threshold_z),
+            cdf: z
+        };
+    }
+}

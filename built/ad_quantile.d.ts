@@ -1,8 +1,9 @@
+import { IADProviderScalar } from "./ad";
 /**
  * Quantile anomaly detector, using QMiner's GK algorithm.
  * NOT WORKING ATM
  */
-export declare class QuantileAD {
+export declare class QuantileAD implements IADProviderScalar {
     private gk;
     constructor();
     add(sample: number): void;
@@ -11,7 +12,7 @@ export declare class QuantileAD {
 /**
  * Quantile anomaly detector, using public TDigest library.
  */
-export declare class QuantileAD2 {
+export declare class QuantileAD2 implements IADProviderScalar {
     private td;
     private cnt_before_active;
     private threshold_low;
@@ -19,4 +20,15 @@ export declare class QuantileAD2 {
     constructor(min_count: number, threshold_low: number, threshold_high: number);
     add(sample: number): void;
     test(sample: number): any;
+}
+/**
+ * ZScore anomaly detector.
+ */
+export declare class ZScoreAD implements IADProviderScalar {
+    private cnt_before_active;
+    private threshold_z;
+    private zs;
+    constructor(min_count: number, threshold_z: number);
+    add(sample: number): void;
+    test(x: number): any;
 }
