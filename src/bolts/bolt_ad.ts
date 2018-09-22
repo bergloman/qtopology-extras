@@ -90,11 +90,12 @@ export class AnomalyDetectorZScoreBolt extends AnomalyDetectorBaseBolt {
 
     public innerInit(config: any) {
         let min_count = config.min_count || 100;
-        let threshold_z: number = config.threshold_z || 3;
+        let threshold_z_pos: number = config.threshold_z_pos;
+        let threshold_z_neg: number = config.threshold_z_neg;
         this.alert_type = DETECTOR_TYPE_ZS;
         let factory: t.IADProviderScalarFactory = {
             create: function (): t.IADProviderScalar {
-                return new tq.ZScoreAD(min_count, threshold_z);
+                return new tq.ZScoreAD(min_count, threshold_z_pos, threshold_z_neg);
             }
         };
         return factory;

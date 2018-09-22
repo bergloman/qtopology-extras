@@ -102,12 +102,12 @@ export class ZScore {
 
         //return result
         if (curr.var == 0) return NaN;
-        return Math.abs(curr.avg - x) / curr.stdDev;
+        return (curr.avg - x) / curr.stdDev;
     }
 
     public test(x: number): number {
         const curr = this.stats.getStats();
         if (curr.var == 0) return NaN;
-        return Math.abs(curr.avg - x) / curr.stdDev;
+        return (curr.avg - x) / curr.stdDev;
     }
 }

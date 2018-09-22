@@ -57,9 +57,10 @@ exports.QuantileAD2 = QuantileAD2;
  * ZScore anomaly detector.
  */
 class ZScoreAD {
-    constructor(min_count, threshold_z) {
+    constructor(min_count, threshold_z_pos, threshold_z_neg) {
         this.cnt_before_active = min_count;
-        this.threshold_z = threshold_z;
+        this.threshold_z_pos = threshold_z_pos;
+        this.threshold_z_neg = threshold_z_neg;
         this.zs = new ema_1.ZScore();
     }
     add(sample) {
@@ -74,7 +75,8 @@ class ZScoreAD {
             return { is_anomaly: false, z: 0 };
         }
         return {
-            is_anomaly: (z > this.threshold_z),
+            is_anomaly: (this.threshold_z_pos && z > this.threshold_z_pos) ||
+                (this.threshold_z_neg && z < this.threshold_z_neg),
             cdf: z
         };
     }

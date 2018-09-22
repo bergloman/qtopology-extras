@@ -26,9 +26,10 @@ export declare class QuantileAD2 implements IADProviderScalar {
  */
 export declare class ZScoreAD implements IADProviderScalar {
     private cnt_before_active;
-    private threshold_z;
+    private threshold_z_pos?;
+    private threshold_z_neg?;
     private zs;
-    constructor(min_count: number, threshold_z: number);
+    constructor(min_count: number, threshold_z_pos?: number, threshold_z_neg?: number);
     add(sample: number): void;
     test(x: number): any;
 }

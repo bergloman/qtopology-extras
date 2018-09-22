@@ -76,12 +76,14 @@ export class QuantileAD2 implements IADProviderScalar {
 export class ZScoreAD implements IADProviderScalar {
 
     private cnt_before_active: number;
-    private threshold_z: number;
+    private threshold_z_pos?: number;
+    private threshold_z_neg?: number;
     private zs: ZScore;
 
-    constructor(min_count: number, threshold_z: number) {
+    constructor(min_count: number, threshold_z_pos?: number, threshold_z_neg?: number) {
         this.cnt_before_active = min_count;
-        this.threshold_z = threshold_z;
+        this.threshold_z_pos = threshold_z_pos;
+        this.threshold_z_neg = threshold_z_neg;
         this.zs = new ZScore();
     }
 
@@ -98,7 +100,9 @@ export class ZScoreAD implements IADProviderScalar {
             return { is_anomaly: false, z: 0 };
         }
         return {
-            is_anomaly: (z > this.threshold_z),
+            is_anomaly:
+                (this.threshold_z_pos && z > this.threshold_z_pos) ||
+                (this.threshold_z_neg && z < this.threshold_z_neg),
             cdf: z
         };
     }

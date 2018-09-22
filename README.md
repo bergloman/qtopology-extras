@@ -55,7 +55,8 @@ This anomaly detector uses z-score to detect anomalies:
     "inputs": [{ "source": "bolt_input" }],
     "init": {
         "min_count": 1000,
-        "threshold_z": 3,
+        "threshold_z_pos": 3,
+        "threshold_z_neg": -5,
         "name_field": "tags.name",
         "value_field": "values.avg"
     }

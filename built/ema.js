@@ -78,13 +78,13 @@ class ZScore {
         //return result
         if (curr.var == 0)
             return NaN;
-        return Math.abs(curr.avg - x) / curr.stdDev;
+        return (curr.avg - x) / curr.stdDev;
     }
     test(x) {
         const curr = this.stats.getStats();
         if (curr.var == 0)
             return NaN;
-        return Math.abs(curr.avg - x) / curr.stdDev;
+        return (curr.avg - x) / curr.stdDev;
     }
 }
 exports.ZScore = ZScore;
