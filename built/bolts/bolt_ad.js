@@ -3,8 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const t = require("../ad");
 const tq = require("../ad_quantile");
 const q = require("../../../qtopology");
-const DETECTOR_TYPE = "quantile.simple";
-class AnomalyDetectorQuantileBolt {
+const DETECTOR_TYPE_QS = "quantile.simple";
+const DETECTOR_TYPE_ZS = "zscore";
+/** Base class for scalar anomaly detector */
+class AnomalyDetectorBaseBolt {
     constructor() {
         this.inner = null;
         this.emit_cb = null;
@@ -14,14 +16,7 @@ class AnomalyDetectorQuantileBolt {
     init(name, config, _context, callback) {
         this.emit_cb = config.onEmit;
         this.detector_postfix = "." + name;
-        let min_count = config.min_count || 100;
-        let threshold_low = config.threshold_low || -1;
-        let threshold_high = config.threshold_high || 2;
-        let factory = {
-            create: function () {
-                return new tq.QuantileAD2(min_count, threshold_low, threshold_high);
-            }
-        };
+        let factory = this.innerInit(config);
         this.inner = new t.ADEngineScalar(factory);
         this.transform_helper = new q.TransformHelper({
             name: config.name_field || "name",
@@ -40,7 +35,7 @@ class AnomalyDetectorQuantileBolt {
         if (a.is_anomaly) {
             let alert = {
                 ts: data.ts,
-                type: DETECTOR_TYPE,
+                type: this.alert_type,
                 source: data.tags["$name"] + this.detector_postfix,
                 tags: data.tags,
                 extra_data: a
@@ -52,4 +47,41 @@ class AnomalyDetectorQuantileBolt {
         }
     }
 }
+exports.AnomalyDetectorBaseBolt = AnomalyDetectorBaseBolt;
+/** Anomaly detector using quantiles */
+class AnomalyDetectorQuantileBolt extends AnomalyDetectorBaseBolt {
+    constructor() {
+        super();
+    }
+    innerInit(config) {
+        let min_count = config.min_count || 100;
+        let threshold_low = config.threshold_low || -1;
+        let threshold_high = config.threshold_high || 2;
+        this.alert_type = DETECTOR_TYPE_QS;
+        let factory = {
+            create: function () {
+                return new tq.QuantileAD2(min_count, threshold_low, threshold_high);
+            }
+        };
+        return factory;
+    }
+}
 exports.AnomalyDetectorQuantileBolt = AnomalyDetectorQuantileBolt;
+/** ANomaly detector using ZScore */
+class AnomalyDetectorZScoreBolt extends AnomalyDetectorBaseBolt {
+    constructor() {
+        super();
+    }
+    innerInit(config) {
+        let min_count = config.min_count || 100;
+        let threshold_z = config.threshold_z || 3;
+        this.alert_type = DETECTOR_TYPE_ZS;
+        let factory = {
+            create: function () {
+                return new tq.ZScoreAD(min_count, threshold_z);
+            }
+        };
+        return factory;
+    }
+}
+exports.AnomalyDetectorZScoreBolt = AnomalyDetectorZScoreBolt;

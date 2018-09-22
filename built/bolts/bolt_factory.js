@@ -7,6 +7,7 @@ const spout_kafka_1 = require("./spout_kafka");
 function createBolts(subtype) {
     switch (subtype) {
         case "quantile_ad": return new bolt_ad_1.AnomalyDetectorQuantileBolt();
+        case "zscore_ad": return new bolt_ad_1.AnomalyDetectorZScoreBolt();
         case "event_window": return new bolt_ew_1.EventWindowBolt();
         case "nn": return new bolt_nn_1.NearestNeighborBolt();
         default: return null;
