@@ -1,4 +1,4 @@
-import * as q from "../../../qtopology";
+import * as q from "./qtopology";
 export declare class KafkaSpout implements q.Spout {
     private _generator;
     constructor();

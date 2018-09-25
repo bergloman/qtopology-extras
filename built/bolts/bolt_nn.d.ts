@@ -1,4 +1,4 @@
-import * as q from "../../../qtopology";
+import * as q from "./qtopology";
 export declare class NearestNeighborBolt implements q.Bolt {
     private nn;
     private value_name;

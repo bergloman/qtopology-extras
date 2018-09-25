@@ -1,5 +1,5 @@
 import * as t from "../ad";
-import * as q from "../../../qtopology";
+import * as q from "./qtopology";
 /** Base class for scalar anomaly detector */
 export declare abstract class AnomalyDetectorBaseBolt implements q.Bolt {
     private inner;
