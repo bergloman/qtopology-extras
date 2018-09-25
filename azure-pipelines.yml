@@ -15,5 +15,12 @@ steps:
 - script: |
     npm install -g typescript
     npm install
+  displayName: 'NPM install'
+
+- script: |
     npm run build
-  displayName: 'npm install and build'
+  displayName: 'Build'
+
+- script: |
+    npm test
+  displayName: 'Unit tests'
