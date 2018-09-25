@@ -1,4 +1,4 @@
-import * as q from "../../../qtopology";
+import * as q from "./qtopology";
 import { EventWindowBolt } from "./bolt_ew";
 import { AnomalyDetectorZScoreBolt, AnomalyDetectorQuantileBolt } from "./bolt_ad";
 import { NearestNeighborBolt } from "./bolt_nn";

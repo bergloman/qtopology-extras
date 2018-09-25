@@ -1,4 +1,4 @@
-import * as q from "../../../qtopology";
+import * as q from "./qtopology";
 import { EventWindowTracker } from "..";
 import { IEventWindow } from "../event_window_tracker";
 

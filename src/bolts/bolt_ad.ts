@@ -1,6 +1,6 @@
 import * as t from "../ad";
 import * as tq from "../ad_quantile";
-import * as q from "../../../qtopology";
+import * as q from "./qtopology";
 
 const DETECTOR_TYPE_QS = "quantile.simple";
 const DETECTOR_TYPE_ZS = "zscore";

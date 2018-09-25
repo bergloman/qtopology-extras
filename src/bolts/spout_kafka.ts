@@ -1,5 +1,5 @@
 import * as k from "kafka-node";
-import * as q from "../../../qtopology";
+import * as q from "./qtopology";
 
 const HIGH_WATER = 100;
 const LOW_WATER = 10;
