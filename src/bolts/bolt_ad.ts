@@ -49,7 +49,7 @@ export abstract class AnomalyDetectorBaseBolt implements q.Bolt {
             let alert = {
                 ts: data.ts,
                 type: this.alert_type,
-                source: data.tags["$name"] + this.detector_postfix,
+                source: new_data.name + this.detector_postfix,
                 tags: data.tags,
                 extra_data: a
             };

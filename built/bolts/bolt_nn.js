@@ -27,7 +27,7 @@ class NearestNeighborBolt {
         }
         let distance = this.nn.getDistance(data.names, true);
         if (distance >= 0) {
-            const rec = { name: this.value_name, value: distance, source: data };
+            const rec = { name: this.value_name, value: distance, source: data, ts: data.ts_start };
             this.emit_cb(rec, null, callback);
         }
         else {
