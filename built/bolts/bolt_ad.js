@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const t = require("../ad");
 const tq = require("../ad_quantile");
 const q = require("./qtopology");
-const DETECTOR_TYPE_QS = "quantile.simple";
+const DETECTOR_TYPE_QS = "quantile";
 const DETECTOR_TYPE_ZS = "zscore";
 /** Base class for scalar anomaly detector */
 class AnomalyDetectorBaseBolt {

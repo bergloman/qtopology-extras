@@ -21,9 +21,69 @@ This repository contains the following extensions:
 - Spouts that connect to Kafka topics.
 - Bolts that publish to Kafka topics.
 
+## Common data formats
+
+### GDR data
+
+**General Data Record** contains timestamp, tags (simple string values) and values (simple numerics). Optionally, one can attach extra_data (arbitrary objects).
+
+```json
+{
+    "ts": "2018-09-29T12:34:56",
+    "tags": { "tag1": "a", "tag2": "b" },
+    "values": { "avg": 123.456 },
+    "extra_data": {
+        "additional": [1, 2, 3],
+        "version": {
+            "major": 2,
+            "minor": 1,
+            "release_on": "2018-09-27"
+        }
+    }
+}
+```
+
+### Events
+
+Event contains name and timestamp
+
+```json
+{
+    "ts": "2018-09-29T12:34:56",
+    "name": "some_name"
+}
+```
+
+### Alerts
+
+Alert is written as a GDR record. It contains timestamp, alert type, source of alerts, tags of input data and extra data that describes the alert.
+
+```json
+{
+    "ts": "2018-09-29T12:34:56",
+    "tags": {
+        "$alert-type": "quantile",
+        "$alert-source": "bucket1.quantile",
+        "tag1": "a",
+        "tag2": "b"
+    },
+    "values": {
+        "value": 1234,
+        "cdf": 0.9921,
+        "threshold_cdf":  0.99,
+        "threshold_value":  1218
+    },
+    "extra_data": {}
+}
+```
+
 ## Anomaly detectors
 
-This anomaly detector uses quantile estimation to detect anomalies:
+### Quantile estimation
+
+This anomaly detector uses quantile estimation to detect anomalies.
+
+It uses name and value field queries. Name is used for separating values into buckets. Each bucket is being tracked separately.
 
 ```json
 {
@@ -42,6 +102,39 @@ This anomaly detector uses quantile estimation to detect anomalies:
     }
 }
 ```
+
+Example input:
+
+```json
+{
+    "ts": "2018-09-29T12:34:56",
+    "tags": { "tag1": "a", "tag2": "b" },
+    "values": { "avg": 123.456 }
+}
+```
+
+Example output contains same tags:
+
+```json
+{
+    "ts": "2018-09-29T12:34:56",
+    "tags": {
+        "$alert-type": "quantile",
+        "$alert-source": "bucket1.quantile",
+        "tag1": "a",
+        "tag2": "b"
+    },
+    "values": {
+        "value": 1234,
+        "cdf": 0.9921,
+        "threshold_cdf":  0.99,
+        "threshold_value":  1218
+    },
+    "extra_data": {}
+}
+```
+
+### Z-score anomaly detection
 
 This anomaly detector uses z-score to detect anomalies:
 
@@ -62,3 +155,24 @@ This anomaly detector uses z-score to detect anomalies:
     }
 }
 ```
+
+## Windowing operation
+
+This bolt receives event stream and emits window statistics in regular time intervals:
+
+```json
+{
+    "name": "bolt_processing_ew",
+    "working_dir": "qtopology-extras",
+    "type": "module_method",
+    "cmd": "createBolts",
+    "subtype": "event_window",
+    "inputs": [{ "source": "input" }],
+    "init": {
+        "window_len": 1800000,
+        "step": 600000
+    }
+}
+```
+
+This example emits statistics for 30-minute sliding windows, every 10 minutes.

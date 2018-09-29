@@ -1,8 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-class ADProviderTestResult {
-}
-exports.ADProviderTestResult = ADProviderTestResult;
 class ADEngineScalar {
     constructor(factory) {
         this.detectors = new Map();

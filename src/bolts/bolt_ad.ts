@@ -2,7 +2,7 @@ import * as t from "../ad";
 import * as tq from "../ad_quantile";
 import * as q from "./qtopology";
 
-const DETECTOR_TYPE_QS = "quantile.simple";
+const DETECTOR_TYPE_QS = "quantile";
 const DETECTOR_TYPE_ZS = "zscore";
 
 /** Base class for scalar anomaly detector */

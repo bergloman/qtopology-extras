@@ -1,11 +1,10 @@
-export declare class ADProviderTestResult {
+export interface IADProviderTestResult {
     is_anomaly: boolean;
-    cdf: number;
     sample: number;
 }
 export interface IADProviderScalar {
     add(sample: number): void;
-    test(sample: number): ADProviderTestResult;
+    test(sample: number): IADProviderTestResult;
 }
 export interface IADProviderScalarFactory {
     create(): IADProviderScalar;
@@ -20,8 +19,8 @@ export declare class ADEngineScalar {
 export declare class DummyADScalar implements IADProviderScalar {
     private calls;
     private results;
-    constructor(results: ADProviderTestResult[]);
+    constructor(results: IADProviderTestResult[]);
     add(sample: number): void;
-    test(sample: number): ADProviderTestResult;
+    test(sample: number): IADProviderTestResult;
     getCalls(): number[];
 }
