@@ -1,5 +1,5 @@
 import * as q from "./qtopology";
-import { IEventWindow } from "../event_window_tracker";
+import { IEventWindow } from "../data_objects";
 export declare class EventWindowBolt implements q.Bolt {
     private event_window;
     private emit_cb;

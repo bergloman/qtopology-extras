@@ -26,7 +26,8 @@ class EventWindowBolt {
         callback();
     }
     receive(data, _stream_id, callback) {
-        const res = this.event_window.addEvent(data);
+        let event = data;
+        const res = this.event_window.addEvent(event);
         Promise
             .all(res.map(x => this.sendWindow(x)))
             .then(() => { callback(); })

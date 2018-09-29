@@ -1,6 +1,6 @@
 import * as qm from "qminer";
-import { IEventCounts } from "./event_window_tracker";
 import { EventDictionary } from "./event_dictionary";
+import { IEventCounts } from "./data_objects";
 
 export interface NNParams {
     dictionary?: EventDictionary;

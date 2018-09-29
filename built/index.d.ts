@@ -7,4 +7,5 @@ export * from "./file_transform";
 export * from "./prediction";
 export * from "./quantilize";
 export * from "./splitter";
+export * from "./data_objects";
 export { createBolts } from "./bolts/bolt_factory";

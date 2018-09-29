@@ -30,7 +30,7 @@ export class ADEngineScalar {
         this.detectors.get(name).add(sample);
     }
 
-    test(name: string, sample: number): any {
+    test(name: string, sample: number): IADProviderTestResult {
         if (!this.detectors.has(name)) {
             this.detectors.set(name, this.factory.create());
         }

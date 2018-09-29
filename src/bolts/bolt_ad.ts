@@ -1,6 +1,7 @@
 import * as t from "../ad";
 import * as tq from "../ad_quantile";
 import * as q from "./qtopology";
+import { IGdrRecord } from "../data_objects";
 
 const DETECTOR_TYPE_QS = "quantile";
 const DETECTOR_TYPE_ZS = "zscore";
@@ -46,13 +47,21 @@ export abstract class AnomalyDetectorBaseBolt implements q.Bolt {
         let a = this.inner.test(new_data.name, new_data.value);
         this.inner.add(new_data.name, new_data.value);
         if (a.is_anomaly) {
-            let alert = {
+            let alert: IGdrRecord = {
                 ts: data.ts,
-                type: this.alert_type,
-                source: new_data.name + this.detector_postfix,
                 tags: data.tags,
+                values: {},
                 extra_data: a
             };
+            alert.tags["$alert-type"] = this.alert_type;
+            alert.tags["$alert-source"] = new_data.name + this.detector_postfix;
+            // let alert = {
+            //     ts: data.ts,
+            //     type: this.alert_type,
+            //     source: new_data.name + this.detector_postfix,
+            //     tags: data.tags,
+            //     extra_data: a
+            // };
             this.emit_cb(alert, null, callback);
         } else {
             callback();

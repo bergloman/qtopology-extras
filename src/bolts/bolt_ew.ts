@@ -1,6 +1,6 @@
 import * as q from "./qtopology";
 import { EventWindowTracker } from "..";
-import { IEventWindow } from "../event_window_tracker";
+import { IEvent, IEventWindow } from "../data_objects";
 
 export class EventWindowBolt implements q.Bolt {
 
@@ -27,7 +27,8 @@ export class EventWindowBolt implements q.Bolt {
     }
 
     receive(data: any, _stream_id: string, callback: q.SimpleCallback) {
-        const res = this.event_window.addEvent(data);
+        let event: IEvent = data;
+        const res = this.event_window.addEvent(event);
         Promise
             .all(res.map(x => this.sendWindow(x)))
             .then(()=>{ callback(); })

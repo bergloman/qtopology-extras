@@ -1,18 +1,7 @@
-export interface IEvent {
-    ts: Date;
-    name: string;
-}
+import { IEvent, IEventWindow, IEventCounts } from "./data_objects";
 
 interface IEventInternal extends IEvent {
     ts_d: number;
-}
-export interface IEventCounts {
-    [key: string]: number
-}
-export interface IEventWindow {
-    ts_start: Date;
-    ts_end: Date;
-    names: IEventCounts;
 }
 
 export interface IEventWindowTrackerParams {

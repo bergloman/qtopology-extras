@@ -35,11 +35,19 @@ class AnomalyDetectorBaseBolt {
         if (a.is_anomaly) {
             let alert = {
                 ts: data.ts,
-                type: this.alert_type,
-                source: new_data.name + this.detector_postfix,
                 tags: data.tags,
+                values: {},
                 extra_data: a
             };
+            alert.tags["$alert-type"] = this.alert_type;
+            alert.tags["$alert-source"] = new_data.name + this.detector_postfix;
+            // let alert = {
+            //     ts: data.ts,
+            //     type: this.alert_type,
+            //     source: new_data.name + this.detector_postfix,
+            //     tags: data.tags,
+            //     extra_data: a
+            // };
             this.emit_cb(alert, null, callback);
         }
         else {

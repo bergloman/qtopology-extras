@@ -1,15 +1,4 @@
-export interface IEvent {
-    ts: Date;
-    name: string;
-}
-export interface IEventCounts {
-    [key: string]: number;
-}
-export interface IEventWindow {
-    ts_start: Date;
-    ts_end: Date;
-    names: IEventCounts;
-}
+import { IEvent, IEventWindow } from "./data_objects";
 export interface IEventWindowTrackerParams {
     window_len?: number;
     step?: number;

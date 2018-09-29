@@ -14,7 +14,7 @@ export declare class ADEngineScalar {
     private detectors;
     constructor(factory: IADProviderScalarFactory);
     add(name: string, sample: number): void;
-    test(name: string, sample: number): any;
+    test(name: string, sample: number): IADProviderTestResult;
 }
 export declare class DummyADScalar implements IADProviderScalar {
     private calls;
