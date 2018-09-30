@@ -18,9 +18,11 @@ export interface IEvent {
     name: string;
     ts: Date;
 }
+/** Bag-of-events */
 export interface IEventCounts {
     [key: string]: number;
 }
+/** Window of events */
 export interface IEventWindow {
     ts_start: Date;
     ts_end: Date;

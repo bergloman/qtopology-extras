@@ -2,9 +2,12 @@ import * as qm from "qminer";
 import * as tdigest from "tdigest";
 import { IADProviderScalar, IADProviderTestResult } from "./ad";
 import { ZScore } from "./ema";
+import { IGdrValues } from "./data_objects";
 
+/** Result for qunatile anomaly detector */
 class QuantileADResult implements IADProviderTestResult {
     public is_anomaly: boolean;
+    public values: IGdrValues;
     public sample: number;
     public cdf: number;
     public threshold_cdf_low: number;
@@ -30,10 +33,22 @@ export class QuantileAD implements IADProviderScalar {
     test(sample: number): any {
         //let cdf = this.gk.cdf(sample);
         let cdf = this.gk.quantile(sample);
-        return {
-            is_anomaly: (cdf < 0.02 || cdf > 0.98),
-            cdf: cdf
+        let threshold_cdf_low = 0.02;
+        let threshold_cdf_high = 0.98
+        let res: QuantileADResult = {
+            is_anomaly: (cdf < threshold_cdf_low) || (cdf > threshold_cdf_high),
+            sample: sample,
+            cdf: cdf,
+            threshold_cdf_low: threshold_cdf_low,
+            threshold_cdf_high: threshold_cdf_high,
+            values: {
+                sample: sample,
+                cdf: cdf,
+                threshold_cdf_low: threshold_cdf_low,
+                threshold_cdf_high: threshold_cdf_high
+            }
         };
+        return res;
     }
 }
 
@@ -72,14 +87,22 @@ export class QuantileAD2 implements IADProviderScalar {
             sample: sample,
             cdf: cdf,
             threshold_cdf_low: this.threshold_cdf_low,
-            threshold_cdf_high: this.threshold_cdf_high
+            threshold_cdf_high: this.threshold_cdf_high,
+            values: {
+                sample: sample,
+                cdf: cdf,
+                threshold_cdf_low: this.threshold_cdf_low,
+                threshold_cdf_high: this.threshold_cdf_high
+            }
         };
         return res;
     }
 }
 
+/** Result of z-score anomaly detector */
 class ZScoreADResult implements IADProviderTestResult {
     public is_anomaly: boolean;
+    public values: IGdrValues;
     public sample: number;
     public z: number;
     public threshold_z_pos: number;
@@ -121,7 +144,13 @@ export class ZScoreAD implements IADProviderScalar {
             sample: x,
             z: z,
             threshold_z_pos: this.threshold_z_pos,
-            threshold_z_neg: this.threshold_z_neg
+            threshold_z_neg: this.threshold_z_neg,
+            values: {
+                sample: x,
+                z: z,
+                threshold_z_pos: this.threshold_z_pos,
+                threshold_z_neg: this.threshold_z_neg
+            }
         };
         return res;
     }

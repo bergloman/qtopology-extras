@@ -1,12 +1,19 @@
 import * as qm from "qminer";
 import { EventDictionary } from "./event_dictionary";
 import { IEventCounts } from "./data_objects";
+import { SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS } from "constants";
 
 export interface NNParams {
     dictionary?: EventDictionary;
     min_len: number;
     max_len: number;
     k?: number;
+}
+
+export interface INnResult {
+    distance: number;
+    k: number;
+    kNearest: IEventCounts;
 }
 
 export class NN {
@@ -16,6 +23,7 @@ export class NN {
     private max_len?: number;
 
     private window: Array<qm.la.SparseVector>;
+    private window_n: Array<IEventCounts>;
     private curr_index: number;
     private k: number;
 
@@ -26,20 +34,26 @@ export class NN {
         this.max_len = params.max_len || -1;
         this.k = params.k || 1;
         this.window = [];
+        this.window_n = [];
         this.curr_index = 0;
     }
 
-    getDistance(w: IEventCounts, auto_add?: boolean): number {
+    getDistance(w: IEventCounts, auto_add?: boolean): INnResult {
         let svec = this.createSpareVector(w);
-        let res = Number.MAX_VALUE;
+        let distance = Number.MAX_VALUE;
+        let kNearest = {};
+        let diff = {};
+
         if (this.window.length < this.min_len) {
-            res = -1;
+            distance = -1;
         } else if (this.window.length == 0) {
-            res = 0;
+            distance = 0;
         } else {
             // nearest neighbours, sorted by distance asc
             let svec_closest = [];
-            for (let a of this.window) {
+            //for (let a of this.window) {
+            for (let i = 0; i < this.window.length; i++) {
+                let a = this.window[i];
                 let d = this.distanceInternal(svec, a);
                 if (svec_closest.length == this.k) {
                     // early check
@@ -47,19 +61,25 @@ export class NN {
                         continue;
                     }
                 }
-                svec_closest.push({ d: d, svec: a });
+                svec_closest.push({ d: d, svec: a, i: i });
                 svec_closest.sort((a, b) => a.d - b.d);
                 if (svec_closest.length > this.k) {
                     svec_closest = svec_closest.slice(0, this.k);
                 }
             }
-            res = svec_closest[svec_closest.length - 1].d;
+            let last = svec_closest[svec_closest.length - 1];
+            distance = last.d;
+            kNearest = this.window_n[last.i];
         }
         if (auto_add) {
-            this.addInternal(svec);
+            this.addInternal(svec, w);
         }
 
-        return res;
+        return {
+            distance: distance,
+            k: this.k,
+            kNearest: kNearest
+        };
     }
 
     private createSpareVector(w: IEventCounts) {
@@ -71,14 +91,16 @@ export class NN {
 
     add(w: IEventCounts): void {
         let svec = this.createSpareVector(w);
-        this.addInternal(svec);
+        this.addInternal(svec, w);
     }
 
-    private addInternal(svec: qm.la.SparseVector) {
+    private addInternal(svec: qm.la.SparseVector, w: IEventCounts) {
         if (this.max_len < 0 || this.window.length < this.max_len) {
             this.window.push(svec);
+            this.window_n.push(w);
         } else {
             this.window[this.curr_index] = svec;
+            this.window_n[this.curr_index] = w;
             this.curr_index = (this.curr_index + 1) % this.max_len;
         }
     }

@@ -6,11 +6,18 @@ export interface NNParams {
     max_len: number;
     k?: number;
 }
+export interface INnResult {
+    k: number;
+    distance: number;
+    kNearest: IEventCounts;
+    diff: IEventCounts;
+}
 export declare class NN {
     private dictionary;
     private min_len;
     private max_len?;
     private window;
+    private window_n;
     private curr_index;
     private k;
     constructor(params?: NNParams);

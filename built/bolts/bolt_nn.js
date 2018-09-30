@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const nn_1 = require("../nn");
+const DETECTOR_TYPE = "kNN";
 class NearestNeighborBolt {
     constructor() {
         this.nn = null;
@@ -8,7 +9,6 @@ class NearestNeighborBolt {
     }
     init(_name, config, _context, callback) {
         this.emit_cb = config.onEmit;
-        this.value_name = config.value_name || "distance";
         this.nn = new nn_1.NN({
             min_len: config.min_len || 0,
             max_len: config.max_len || -1,
@@ -27,8 +27,18 @@ class NearestNeighborBolt {
         }
         let distance = this.nn.getDistance(data.names, true);
         if (distance >= 0) {
-            const rec = { name: this.value_name, value: distance, source: data, ts: data.ts_start };
-            this.emit_cb(rec, null, callback);
+            const alert = {
+                ts: data.ts_start,
+                tags: {
+                    "$alert-type": DETECTOR_TYPE,
+                    "$alert-source": ""
+                },
+                values: {
+                    distance: distance
+                },
+                extra_data: data
+            };
+            this.emit_cb(alert, null, callback);
         }
         else {
             callback();

@@ -8,16 +8,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const q = require("./qtopology");
 const __1 = require("..");
 class EventWindowBolt {
     constructor() {
         this.emit_cb = null;
+        this.transform_helper = null;
+        this.event_window = null;
     }
     init(_name, config, _context, callback) {
         this.emit_cb = config.onEmit;
         this.event_window = new __1.EventWindowTracker({
             step: config.step || config.window_len || 600000,
             window_len: config.window_len || 600000
+        });
+        this.transform_helper = new q.TransformHelper({
+            name: config.name_field || "name",
+            ts: config.ts_field || "ts",
         });
         callback();
     }
@@ -26,7 +33,7 @@ class EventWindowBolt {
         callback();
     }
     receive(data, _stream_id, callback) {
-        let event = data;
+        const event = this.transform_helper.transform(data);
         const res = this.event_window.addEvent(event);
         Promise
             .all(res.map(x => this.sendWindow(x)))

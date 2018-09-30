@@ -1,7 +1,6 @@
 import * as q from "./qtopology";
 export declare class NearestNeighborBolt implements q.Bolt {
     private nn;
-    private value_name;
     private emit_cb;
     constructor();
     init(_name: string, config: any, _context: any, callback: q.SimpleCallback): void;

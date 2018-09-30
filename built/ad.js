@@ -27,9 +27,8 @@ class DummyADScalar {
     add(sample) {
         this.calls.push(sample);
     }
-    test(sample) {
+    test(_sample) {
         let res = this.results[0];
-        res.sample = sample;
         this.results = this.results.slice(1);
         return res;
     }

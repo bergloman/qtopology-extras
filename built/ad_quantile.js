@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const qm = require("qminer");
 const tdigest = require("tdigest");
 const ema_1 = require("./ema");
+/** Result for qunatile anomaly detector */
 class QuantileADResult {
 }
 /**
@@ -19,10 +20,22 @@ class QuantileAD {
     test(sample) {
         //let cdf = this.gk.cdf(sample);
         let cdf = this.gk.quantile(sample);
-        return {
-            is_anomaly: (cdf < 0.02 || cdf > 0.98),
-            cdf: cdf
+        let threshold_cdf_low = 0.02;
+        let threshold_cdf_high = 0.98;
+        let res = {
+            is_anomaly: (cdf < threshold_cdf_low) || (cdf > threshold_cdf_high),
+            sample: sample,
+            cdf: cdf,
+            threshold_cdf_low: threshold_cdf_low,
+            threshold_cdf_high: threshold_cdf_high,
+            values: {
+                sample: sample,
+                cdf: cdf,
+                threshold_cdf_low: threshold_cdf_low,
+                threshold_cdf_high: threshold_cdf_high
+            }
         };
+        return res;
     }
 }
 exports.QuantileAD = QuantileAD;
@@ -50,12 +63,19 @@ class QuantileAD2 {
             sample: sample,
             cdf: cdf,
             threshold_cdf_low: this.threshold_cdf_low,
-            threshold_cdf_high: this.threshold_cdf_high
+            threshold_cdf_high: this.threshold_cdf_high,
+            values: {
+                sample: sample,
+                cdf: cdf,
+                threshold_cdf_low: this.threshold_cdf_low,
+                threshold_cdf_high: this.threshold_cdf_high
+            }
         };
         return res;
     }
 }
 exports.QuantileAD2 = QuantileAD2;
+/** Result of z-score anomaly detector */
 class ZScoreADResult {
 }
 /**
@@ -82,7 +102,13 @@ class ZScoreAD {
             sample: x,
             z: z,
             threshold_z_pos: this.threshold_z_pos,
-            threshold_z_neg: this.threshold_z_neg
+            threshold_z_neg: this.threshold_z_neg,
+            values: {
+                sample: x,
+                z: z,
+                threshold_z_pos: this.threshold_z_pos,
+                threshold_z_neg: this.threshold_z_neg
+            }
         };
         return res;
     }

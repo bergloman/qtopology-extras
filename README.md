@@ -54,9 +54,23 @@ Event contains name and timestamp
 }
 ```
 
+Event windows:
+
+```json
+{
+    "ts_start": "2018-09-29T12:34:56",
+    "ts_end": "2018-09-29T12:44:56",
+    "names": {
+        "a": 12,
+        "b": 5,
+        "c": 89
+    }
+}
+```
+
 ### Alerts
 
-Alert is written as a GDR record. It contains timestamp, alert type, source of alerts, tags of input data and extra data that describes the alert.
+Alert is written as a GDR record. It contains timestamp, alert type, source of alerts, tags of input data and extra data that describes the alert. It contains two standard tags - `$alert-type` and `$alert-source`.
 
 ```json
 {
@@ -170,9 +184,34 @@ This bolt receives event stream and emits window statistics in regular time inte
     "inputs": [{ "source": "input" }],
     "init": {
         "window_len": 1800000,
-        "step": 600000
+        "step": 600000,
+        "name_field": "path.to.name",
+        "ts_field": "path.to.ts",
     }
 }
 ```
 
 This example emits statistics for 30-minute sliding windows, every 10 minutes.
+
+Example input:
+
+```json
+{
+    "ts": "2018-09-29T12:34:56",
+    "name": "some_name"
+}
+```
+
+Example output contains same tags:
+
+```json
+{
+    "ts_start": "2018-09-29T12:20:00",
+    "ts_end": "2018-09-29T12:30:00",
+    "names": {
+        "some_name": 2,
+        "some_name2": 1,
+        "some_name3": 1
+    }
+}
+```

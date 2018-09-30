@@ -1,7 +1,9 @@
+import { IGdrValues } from "./data_objects";
 
 export interface IADProviderTestResult {
     is_anomaly: boolean;
-    sample: number;
+    values: IGdrValues;
+    extra_data?: any;
 }
 
 export interface IADProviderScalar {
@@ -48,9 +50,8 @@ export class DummyADScalar implements IADProviderScalar {
     add(sample: number): void {
         this.calls.push(sample);
     }
-    test(sample: number): IADProviderTestResult {
+    test(_sample: number): IADProviderTestResult {
         let res = this.results[0];
-        res.sample = sample;
         this.results = this.results.slice(1);
         return res;
     }

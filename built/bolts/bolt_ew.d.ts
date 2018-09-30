@@ -3,6 +3,7 @@ import { IEventWindow } from "../data_objects";
 export declare class EventWindowBolt implements q.Bolt {
     private event_window;
     private emit_cb;
+    private transform_helper;
     constructor();
     init(_name: string, config: any, _context: any, callback: q.SimpleCallback): void;
     heartbeat(): void;

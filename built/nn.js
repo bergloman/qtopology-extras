@@ -10,6 +10,7 @@ class NN {
         this.max_len = params.max_len || -1;
         this.k = params.k || 1;
         this.window = [];
+        this.window_n = [];
         this.curr_index = 0;
     }
     getDistance(w, auto_add) {
@@ -41,7 +42,7 @@ class NN {
             res = svec_closest[svec_closest.length - 1].d;
         }
         if (auto_add) {
-            this.addInternal(svec);
+            this.addInternal(svec, w);
         }
         return res;
     }
@@ -53,14 +54,16 @@ class NN {
     }
     add(w) {
         let svec = this.createSpareVector(w);
-        this.addInternal(svec);
+        this.addInternal(svec, w);
     }
-    addInternal(svec) {
+    addInternal(svec, w) {
         if (this.max_len < 0 || this.window.length < this.max_len) {
             this.window.push(svec);
+            this.window_n.push(w);
         }
         else {
             this.window[this.curr_index] = svec;
+            this.window_n[this.curr_index] = w;
             this.curr_index = (this.curr_index + 1) % this.max_len;
         }
     }

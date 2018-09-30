@@ -1,10 +1,12 @@
 import * as q from "./qtopology";
 import { NN } from "../nn";
+import { IGdrRecord } from "../data_objects";
+
+const DETECTOR_TYPE = "kNN";
 
 export class NearestNeighborBolt implements q.Bolt {
 
     private nn: NN;
-    private value_name: string;
     private emit_cb: q.BoltEmitCallback;
 
     constructor() {
@@ -14,7 +16,6 @@ export class NearestNeighborBolt implements q.Bolt {
 
     init(_name: string, config: any, _context: any, callback: q.SimpleCallback) {
         this.emit_cb = config.onEmit;
-        this.value_name = config.value_name || "distance";
         this.nn = new NN({
             min_len: config.min_len || 0,
             max_len: config.max_len || -1,
@@ -34,10 +35,20 @@ export class NearestNeighborBolt implements q.Bolt {
             // do not process empty windows
             return callback();
         }
-        let distance = this.nn.getDistance(data.names, true);
-        if (distance >= 0) {
-            const rec = { name: this.value_name, value: distance, source: data, ts: data.ts_start };
-            this.emit_cb(rec, null, callback);
+        let res = this.nn.getDistance(data.names, true);
+        if (res.distance >= 0) {
+            const alert: IGdrRecord = {
+                ts: data.ts_start,
+                tags: {
+                    "$alert-type": DETECTOR_TYPE,
+                    "$alert-source": ""
+                },
+                values: {
+                    distance: res.distance
+                },
+                extra_data: res
+            };
+            this.emit_cb(alert, null, callback);
         } else {
             callback();
         }
