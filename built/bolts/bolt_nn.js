@@ -6,9 +6,11 @@ class NearestNeighborBolt {
     constructor() {
         this.nn = null;
         this.emit_cb = null;
+        this.source_name = null;
     }
     init(_name, config, _context, callback) {
         this.emit_cb = config.onEmit;
+        this.source_name = config.alert_source_name;
         this.nn = new nn_1.NN({
             min_len: config.min_len || 0,
             max_len: config.max_len || -1,
@@ -25,18 +27,18 @@ class NearestNeighborBolt {
             // do not process empty windows
             return callback();
         }
-        let distance = this.nn.getDistance(data.names, true);
-        if (distance >= 0) {
+        let res = this.nn.getDistance(data.names, true);
+        if (res.distance >= 0) {
             const alert = {
                 ts: data.ts_start,
                 tags: {
                     "$alert-type": DETECTOR_TYPE,
-                    "$alert-source": ""
+                    "$alert-source": this.source_name
                 },
                 values: {
-                    distance: distance
+                    distance: res.distance
                 },
-                extra_data: data
+                extra_data: res
             };
             this.emit_cb(alert, null, callback);
         }

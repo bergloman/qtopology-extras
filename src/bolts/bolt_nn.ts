@@ -8,14 +8,17 @@ export class NearestNeighborBolt implements q.Bolt {
 
     private nn: NN;
     private emit_cb: q.BoltEmitCallback;
+    private source_name: string;
 
     constructor() {
         this.nn = null;
         this.emit_cb = null;
+        this.source_name = null;
     }
 
     init(_name: string, config: any, _context: any, callback: q.SimpleCallback) {
         this.emit_cb = config.onEmit;
+        this.source_name = config.alert_source_name;
         this.nn = new NN({
             min_len: config.min_len || 0,
             max_len: config.max_len || -1,
@@ -41,7 +44,7 @@ export class NearestNeighborBolt implements q.Bolt {
                 ts: data.ts_start,
                 tags: {
                     "$alert-type": DETECTOR_TYPE,
-                    "$alert-source": ""
+                    "$alert-source": this.source_name
                 },
                 values: {
                     distance: res.distance

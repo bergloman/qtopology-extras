@@ -1,7 +1,6 @@
 import * as qm from "qminer";
 import { EventDictionary } from "./event_dictionary";
 import { IEventCounts } from "./data_objects";
-import { SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS } from "constants";
 
 export interface NNParams {
     dictionary?: EventDictionary;
@@ -13,6 +12,7 @@ export interface NNParams {
 export interface INnResult {
     distance: number;
     k: number;
+    input: IEventCounts;
     kNearest: IEventCounts;
 }
 
@@ -42,7 +42,6 @@ export class NN {
         let svec = this.createSpareVector(w);
         let distance = Number.MAX_VALUE;
         let kNearest = {};
-        let diff = {};
 
         if (this.window.length < this.min_len) {
             distance = -1;
@@ -78,6 +77,7 @@ export class NN {
         return {
             distance: distance,
             k: this.k,
+            input: w,
             kNearest: kNearest
         };
     }

@@ -15,17 +15,20 @@ class NN {
     }
     getDistance(w, auto_add) {
         let svec = this.createSpareVector(w);
-        let res = Number.MAX_VALUE;
+        let distance = Number.MAX_VALUE;
+        let kNearest = {};
         if (this.window.length < this.min_len) {
-            res = -1;
+            distance = -1;
         }
         else if (this.window.length == 0) {
-            res = 0;
+            distance = 0;
         }
         else {
             // nearest neighbours, sorted by distance asc
             let svec_closest = [];
-            for (let a of this.window) {
+            //for (let a of this.window) {
+            for (let i = 0; i < this.window.length; i++) {
+                let a = this.window[i];
                 let d = this.distanceInternal(svec, a);
                 if (svec_closest.length == this.k) {
                     // early check
@@ -33,18 +36,25 @@ class NN {
                         continue;
                     }
                 }
-                svec_closest.push({ d: d, svec: a });
+                svec_closest.push({ d: d, svec: a, i: i });
                 svec_closest.sort((a, b) => a.d - b.d);
                 if (svec_closest.length > this.k) {
                     svec_closest = svec_closest.slice(0, this.k);
                 }
             }
-            res = svec_closest[svec_closest.length - 1].d;
+            let last = svec_closest[svec_closest.length - 1];
+            distance = last.d;
+            kNearest = this.window_n[last.i];
         }
         if (auto_add) {
             this.addInternal(svec, w);
         }
-        return res;
+        return {
+            distance: distance,
+            k: this.k,
+            input: w,
+            kNearest: kNearest
+        };
     }
     createSpareVector(w) {
         let vec = this.dictionary.createSparseVec(w);
