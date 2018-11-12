@@ -4,12 +4,14 @@ const bolt_ew_1 = require("./bolt_ew");
 const bolt_ad_1 = require("./bolt_ad");
 const bolt_nn_1 = require("./bolt_nn");
 const spout_kafka_1 = require("./spout_kafka");
+const bolt_concat_1 = require("./bolt_concat");
 function createBolts(subtype) {
     switch (subtype) {
         case "quantile_ad": return new bolt_ad_1.AnomalyDetectorQuantileBolt();
         case "zscore_ad": return new bolt_ad_1.AnomalyDetectorZScoreBolt();
         case "event_window": return new bolt_ew_1.EventWindowBolt();
         case "nn": return new bolt_nn_1.NearestNeighborBolt();
+        case "concat_tags": return new bolt_concat_1.ConcatTagsBolt();
         default: return null;
     }
 }
