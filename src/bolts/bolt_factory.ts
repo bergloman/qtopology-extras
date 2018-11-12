@@ -2,8 +2,8 @@ import * as q from "./qtopology";
 import { EventWindowBolt } from "./bolt_ew";
 import { AnomalyDetectorZScoreBolt, AnomalyDetectorQuantileBolt } from "./bolt_ad";
 import { NearestNeighborBolt } from "./bolt_nn";
-import { KafkaSpout } from "./spout_kafka";
 import { ConcatTagsBolt } from "./bolt_concat";
+import { KafkaSpout, KafkaBolt } from "./kafka";
 
 export function createBolts(subtype: string): q.Bolt {
     switch (subtype) {
@@ -12,6 +12,7 @@ export function createBolts(subtype: string): q.Bolt {
         case "event_window": return new EventWindowBolt();
         case "nn": return new NearestNeighborBolt();
         case "concat_tags": return new ConcatTagsBolt();
+        case "kafka": return new KafkaBolt();
         default: return null;
     }
 }

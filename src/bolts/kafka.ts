@@ -17,7 +17,7 @@ class DataGenerator {
         this._data = [];
 
         const options: k.ConsumerGroupOptions = {
-            kafkaHost: host,
+            kafkaHost: host || "localhost:9092",
             ssl: true,
             groupId: groupId || "" + Date.now(),
             sessionTimeout: 15000,
@@ -118,3 +118,69 @@ export class KafkaSpout implements q.Spout {
     }
 }
 
+/**
+ * Kafka producer class.
+ */
+export class KafkaProducer {
+
+    private _ready: boolean;
+    private _topic: string;
+    private _producer: k.HighLevelProducer;
+
+    constructor(host: string, topic: string, callback: q.SimpleCallback) {
+        const options = {
+            kafkaHost: host
+        };
+        this._topic = topic;
+        this._ready = false;
+        const client = new k.KafkaClient(options);
+        this._producer = new k.HighLevelProducer(client);
+        this._producer.on('ready', () => {
+            this._producer.createTopics([topic], false, (error, _data) => {
+                if (error) {
+                    return callback(error);
+                }
+                this._ready = true;
+                callback();
+            });
+        });
+    }
+
+    /**
+     * Sends the message to the appropriate topic.
+     */
+    send(msg: any, callback: q.SimpleCallback) {
+        let self = this;
+        if (self._ready) {
+            const messages = JSON.stringify(msg);
+            const payload = [{ topic: this._topic, messages }];
+            self._producer.send(payload, callback);
+        } else {
+            callback(new Error("Kafka producer is not ready yet"));
+        }
+    }
+
+}
+
+export class KafkaBolt implements q.Bolt {
+
+    private producer: KafkaProducer;
+    
+    constructor() {
+        this.producer = null;
+    }
+
+    init(_name: string, config: any, _context: any, callback: q.SimpleCallback) {
+        this.producer = new KafkaProducer(config.host, config.topic, callback);
+    }
+
+    heartbeat() { }
+
+    shutdown(callback: q.SimpleCallback) {
+        callback();
+    }
+
+    receive(data: any, _stream_id: string, callback: q.SimpleCallback) {
+        this.producer.send(data, callback);
+    }
+}
