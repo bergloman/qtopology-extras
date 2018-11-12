@@ -16,8 +16,11 @@ class ConcatTagsBolt {
     }
     receive(data, _stream_id, callback) {
         let ddata = data;
-        let parts = Object.keys(ddata.tags).map(x => x + "=" + ddata[x]);
-        ddata[this.new_tag_name] = parts.concat(".");
+        let new_tag_value = Object.keys(ddata.tags)
+            .sort()
+            .map(x => x + "=" + ddata.tags[x])
+            .join(".");
+        ddata.tags[this.new_tag_name] = new_tag_value;
         this.emit_cb(ddata, null, callback);
     }
 }

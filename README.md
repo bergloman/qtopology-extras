@@ -215,3 +215,50 @@ Example output contains same tags:
     }
 }
 ```
+
+## Utilites
+
+### Tag concatenation
+
+This bolt concatenates all tags from input GDR record into new tag. Tag names are sorted:
+
+```json
+{
+    "name": "bolt_concat_tags",
+    "working_dir": "qtopology-extras",
+    "type": "module_method",
+    "cmd": "createBolts",
+    "subtype": "concat_tags",
+    "inputs": [{ "source": "input" }],
+    "init": {
+        "new_tag_name": "name_of_new_tag"
+    }
+}
+```
+
+Example input
+
+```json
+{
+    "ts": "2018-09-29T12:20:00",
+    "tags": {
+        "some_name": "abc",
+        "some_name2": 112
+    },
+    "values": { "v1": 56 }
+}
+```
+
+Result
+
+```json
+{
+    "ts": "2018-09-29T12:20:00",
+    "tags": {
+        "some_name": "abc",
+        "some_name2": 112,
+        "name_of_new_tag": "some_name=aabc.some_name2=112"
+    },
+    "values": { "v1": 56 }
+}
+```
