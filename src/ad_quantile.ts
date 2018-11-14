@@ -59,20 +59,23 @@ export class QuantileAD2 implements IADProviderScalar {
 
     private td: any;
     private cnt_before_active: number;
+    private is_active: boolean;
     private threshold_cdf_low: number;
     private threshold_cdf_high: number;
 
     constructor(min_count: number, threshold_low: number, threshold_high: number) {
         this.td = new tdigest.TDigest();
         this.cnt_before_active = min_count;
+        this.is_active = (this.cnt_before_active > 0);
         this.threshold_cdf_low = threshold_low;
         this.threshold_cdf_high = threshold_high;
     }
 
     add(sample: number): void {
         this.td.push(sample);
-        if (this.cnt_before_active > 0) {
+        if (!this.is_active) {
             this.cnt_before_active--;
+            this.is_active = (this.cnt_before_active > 0);
         }
     }
 
@@ -80,7 +83,7 @@ export class QuantileAD2 implements IADProviderScalar {
         let cdf = this.td.p_rank(sample);
         let res: QuantileADResult = {
             is_anomaly:
-                (this.cnt_before_active > 0) && (
+                this.is_active && (
                     (cdf < this.threshold_cdf_low) ||
                     (cdf > this.threshold_cdf_high)
                 ),
