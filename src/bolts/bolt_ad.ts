@@ -44,6 +44,9 @@ export abstract class AnomalyDetectorBaseBolt implements q.Bolt {
 
     receive(data: any, _stream_id: string, callback: q.SimpleCallback) {
         const new_data = this.transform_helper.transform(data);
+        if (new_data.name === undefined || new_data.value === undefined) {
+            throw new Error("Input data is not in proper format for AD: " + JSON.stringify(data));
+        }
         let a = this.inner.test(new_data.name, new_data.value);
         this.inner.add(new_data.name, new_data.value);
         if (a.is_anomaly) {
