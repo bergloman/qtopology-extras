@@ -165,7 +165,7 @@ export class KafkaProducer {
 export class KafkaBolt implements q.Bolt {
 
     private producer: KafkaProducer;
-    
+
     constructor() {
         this.producer = null;
     }

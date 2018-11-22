@@ -78,7 +78,7 @@ export class AnomalyDetectorQuantileBolt extends AnomalyDetectorBaseBolt {
         let threshold_high: number = config.threshold_high || 2;
         this.alert_type = DETECTOR_TYPE_QS;
         let factory: t.IADProviderScalarFactory = {
-            create: function (): t.IADProviderScalar {
+            create: function(): t.IADProviderScalar {
                 return new tq.QuantileAD2(min_count, threshold_low, threshold_high);
             }
         };
@@ -99,7 +99,7 @@ export class AnomalyDetectorZScoreBolt extends AnomalyDetectorBaseBolt {
         let threshold_z_neg: number = config.threshold_z_neg;
         this.alert_type = DETECTOR_TYPE_ZS;
         let factory: t.IADProviderScalarFactory = {
-            create: function (): t.IADProviderScalar {
+            create: function(): t.IADProviderScalar {
                 return new tq.ZScoreAD(min_count, threshold_z_pos, threshold_z_neg);
             }
         };
