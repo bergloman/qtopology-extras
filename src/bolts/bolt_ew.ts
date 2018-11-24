@@ -2,7 +2,7 @@ import * as q from "./qtopology";
 import { EventWindowTracker } from "..";
 import { IEvent, IEventWindow } from "../data_objects";
 
-export class EventWindowBolt implements q.Bolt {
+export class EventWindowBolt implements q.IBolt {
 
     private event_window: EventWindowTracker;
     private emit_cb: q.BoltEmitCallback;

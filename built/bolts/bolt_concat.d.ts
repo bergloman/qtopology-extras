@@ -1,5 +1,5 @@
 import * as q from "./qtopology";
-export declare class ConcatTagsBolt implements q.Bolt {
+export declare class ConcatTagsBolt implements q.IBolt {
     private emit_cb;
     private new_tag_name;
     constructor();

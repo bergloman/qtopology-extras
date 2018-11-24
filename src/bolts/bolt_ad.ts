@@ -7,7 +7,7 @@ const DETECTOR_TYPE_QS = "quantile";
 const DETECTOR_TYPE_ZS = "zscore";
 
 /** Base class for scalar anomaly detector */
-export abstract class AnomalyDetectorBaseBolt implements q.Bolt {
+export abstract class AnomalyDetectorBaseBolt implements q.IBolt {
 
     private inner: t.ADEngineScalar;
     private emit_cb: q.BoltEmitCallback;
