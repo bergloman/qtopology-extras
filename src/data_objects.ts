@@ -24,7 +24,7 @@ export interface IEvent {
 
 /** Bag-of-events */
 export interface IEventCounts {
-    [key: string]: number
+    [key: string]: number;
 }
 
 /** Window of events */

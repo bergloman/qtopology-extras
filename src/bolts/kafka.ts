@@ -17,15 +17,15 @@ class DataGenerator {
         this._data = [];
 
         const options: k.ConsumerGroupOptions = {
-            kafkaHost: host || "localhost:9092",
-            ssl: true,
+            fromOffset: "earliest",
             groupId: groupId || "" + Date.now(),
-            sessionTimeout: 15000,
-            protocol: ['roundrobin'],
-            fromOffset: 'earliest',
-            outOfRangeOffset: 'earliest',
+            kafkaHost: host || "localhost:9092",
             migrateHLC: false,
-            migrateRolling: true
+            migrateRolling: true,
+            outOfRangeOffset: "earliest",
+            protocol: ["roundrobin"],
+            sessionTimeout: 15000,
+            ssl: true
         };
 
         this.consumer_group = new k.ConsumerGroup(options, [topic]);
@@ -41,7 +41,7 @@ class DataGenerator {
         });
     }
 
-    enable() {
+    public enable() {
         if (!this._enabled) {
             if (!this._high_water_clearing) {
                 this.consumer_group.resume();
@@ -50,7 +50,7 @@ class DataGenerator {
         }
     }
 
-    disable() {
+    public disable() {
         if (this._enabled) {
             if (!this._high_water_clearing) {
                 this.consumer_group.pause();
@@ -59,12 +59,12 @@ class DataGenerator {
         }
     }
 
-    next() {
+    public next() {
         if (!this._enabled) {
             return null;
         }
         if (this._data.length > 0) {
-            let msg = this._data[0];
+            const msg = this._data[0];
             this._data = this._data.slice(1);
             if (this._data.length <= LOW_WATER) {
                 this._high_water_clearing = false;
@@ -76,7 +76,7 @@ class DataGenerator {
         }
     }
 
-    stop(cb) {
+    public stop(cb) {
         this.consumer_group.close(true, cb);
     }
 }
@@ -89,27 +89,29 @@ export class KafkaSpout implements q.ISpout {
         this._generator = null;
     }
 
-    init(_name, config, _context, callback) {
+    public init(_name, config, _context, callback) {
         this._generator = new DataGenerator(config.kafka_host, config.topic, config.consumer_group);
         callback();
     }
 
-    heartbeat() { }
+    public heartbeat() {
+        // no-op
+    }
 
-    shutdown(callback) {
+    public shutdown(callback) {
         this._generator.stop(callback);
     }
 
-    run() {
+    public run() {
         this._generator.enable();
     }
 
-    pause() {
+    public pause() {
         this._generator.disable();
     }
 
-    next(callback) {
-        let data = this._generator.next();
+    public next(callback) {
+        const data = this._generator.next();
         if (data) {
             callback(null, data, null, callback);
         } else {
@@ -135,7 +137,7 @@ export class KafkaProducer {
         this._ready = false;
         const client = new k.KafkaClient(options);
         this._producer = new k.HighLevelProducer(client);
-        this._producer.on('ready', () => {
+        this._producer.on("ready", () => {
             this._producer.createTopics([topic], false, (error, _data) => {
                 if (error) {
                     return callback(error);
@@ -149,8 +151,8 @@ export class KafkaProducer {
     /**
      * Sends the message to the appropriate topic.
      */
-    send(msg: any, callback: q.SimpleCallback) {
-        let self = this;
+    public send(msg: any, callback: q.SimpleCallback) {
+        const self = this;
         if (self._ready) {
             const messages = JSON.stringify(msg);
             const payload = [{ topic: this._topic, messages }];
@@ -170,17 +172,19 @@ export class KafkaBolt implements q.IBolt {
         this.producer = null;
     }
 
-    init(_name: string, config: any, _context: any, callback: q.SimpleCallback) {
+    public init(_name: string, config: any, _context: any, callback: q.SimpleCallback) {
         this.producer = new KafkaProducer(config.host, config.topic, callback);
     }
 
-    heartbeat() { }
+    public heartbeat() {
+        // no-op
+    }
 
-    shutdown(callback: q.SimpleCallback) {
+    public shutdown(callback: q.SimpleCallback) {
         callback();
     }
 
-    receive(data: any, _stream_id: string, callback: q.SimpleCallback) {
+    public receive(data: any, _stream_id: string, callback: q.SimpleCallback) {
         this.producer.send(data, callback);
     }
 }

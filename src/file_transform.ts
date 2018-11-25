@@ -7,10 +7,10 @@ import * as lbl from "line-by-line";
  */
 export function transformFile(input_fname: string, output_fname: string, line_handler: (s: string) => string) {
     return new Promise((resolve, reject) => {
-        let lr = new lbl(input_fname);
+        const lr = new lbl(input_fname);
         let buffer = [];
-        lr.on('error', reject);
-        lr.on('line', (s: string) => {
+        lr.on("error", reject);
+        lr.on("line", (s: string) => {
             s = line_handler(s);
             if (s) {
                 buffer.push(s);
@@ -20,7 +20,7 @@ export function transformFile(input_fname: string, output_fname: string, line_ha
                 buffer = [];
             }
         });
-        lr.on('end', () => {
+        lr.on("end", () => {
             if (buffer.length > 0) {
                 fs.appendFileSync(output_fname, buffer.join("\n") + "\n");
                 buffer = [];

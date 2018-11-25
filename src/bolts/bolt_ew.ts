@@ -14,7 +14,7 @@ export class EventWindowBolt implements q.IBolt {
         this.event_window = null;
     }
 
-    init(_name: string, config: any, _context: any, callback: q.SimpleCallback) {
+    public init(_name: string, config: any, _context: any, callback: q.SimpleCallback) {
         this.emit_cb = config.onEmit;
         this.event_window = new EventWindowTracker({
             step: config.step || config.window_len || 600000, // default 10 minutes
@@ -22,29 +22,31 @@ export class EventWindowBolt implements q.IBolt {
         });
         this.transform_helper = new q.TransformHelper({
             name: config.name_field || "name",
-            ts: config.ts_field || "ts",
+            ts: config.ts_field || "ts"
         });
         callback();
     }
 
-    heartbeat() { }
+    public heartbeat() {
+        // no-op
+    }
 
-    shutdown(callback: q.SimpleCallback) {
+    public shutdown(callback: q.SimpleCallback) {
         callback();
     }
 
-    receive(data: any, _stream_id: string, callback: q.SimpleCallback) {
+    public receive(data: any, _stream_id: string, callback: q.SimpleCallback) {
         const event: IEvent = this.transform_helper.transform(data);
         const res = this.event_window.addEvent(event);
         Promise
             .all(res.map(x => this.sendWindow(x)))
             .then(() => { callback(); })
-            .catch((err) => { callback(err); });
+            .catch(err => { callback(err); });
     }
 
-    async sendWindow(window: IEventWindow): Promise<void> {
+    public async sendWindow(window: IEventWindow): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            this.emit_cb(window, null, (err) => {
+            this.emit_cb(window, null, err => {
                 if (err) {
                     reject(err);
                 } else {

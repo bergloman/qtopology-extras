@@ -11,21 +11,23 @@ export class ConcatTagsBolt implements q.IBolt {
         this.new_tag_name = null;
     }
 
-    init(_name: string, config: any, _context: any, callback: q.SimpleCallback) {
+    public init(_name: string, config: any, _context: any, callback: q.SimpleCallback) {
         this.emit_cb = config.onEmit;
         this.new_tag_name = config.new_tag_name;
         callback();
     }
 
-    heartbeat() { }
+    public heartbeat() {
+        // no-op
+    }
 
-    shutdown(callback: q.SimpleCallback) {
+    public shutdown(callback: q.SimpleCallback) {
         callback();
     }
 
-    receive(data: any, _stream_id: string, callback: q.SimpleCallback) {
-        let ddata: IGdrRecord = data as IGdrRecord;
-        let new_tag_value =
+    public receive(data: any, _stream_id: string, callback: q.SimpleCallback) {
+        const ddata: IGdrRecord = data as IGdrRecord;
+        const new_tag_value =
             Object.keys(ddata.tags)
                 .sort()
                 .map(x => x + "=" + ddata.tags[x])

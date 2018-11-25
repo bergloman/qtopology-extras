@@ -10,13 +10,15 @@ class ConcatTagsBolt {
         this.new_tag_name = config.new_tag_name;
         callback();
     }
-    heartbeat() { }
+    heartbeat() {
+        // no-op
+    }
     shutdown(callback) {
         callback();
     }
     receive(data, _stream_id, callback) {
-        let ddata = data;
-        let new_tag_value = Object.keys(ddata.tags)
+        const ddata = data;
+        const new_tag_value = Object.keys(ddata.tags)
             .sort()
             .map(x => x + "=" + ddata.tags[x])
             .join(".");

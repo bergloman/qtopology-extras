@@ -13,7 +13,7 @@ export interface ISplitFilesParams {
 /** Split given file into train-validation-test files */
 export function split_files(options: ISplitFilesParams) {
     return new Promise((resolve, reject) => {
-        let { train_size, validation_size, input_fname, train_fname, validation_fname, test_fname } = options;
+        const { train_size, validation_size, input_fname, train_fname, validation_fname, test_fname } = options;
         let line_counter = 0;
         let header = null;
 
@@ -44,9 +44,9 @@ export function split_files(options: ISplitFilesParams) {
             line_counter++;
         }
 
-        let lr = new lbl(input_fname);
-        lr.on('error', reject);
-        lr.on('line', line_handler);
-        lr.on('end', resolve);
+        const lr = new lbl(input_fname);
+        lr.on("error", reject);
+        lr.on("line", line_handler);
+        lr.on("end", resolve);
     });
 }

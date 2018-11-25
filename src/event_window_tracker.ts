@@ -31,10 +31,10 @@ export class EventWindowTracker {
         this.step = options.step || this.window_len;
     }
 
-    addEvent(event: IEvent): IEventWindow[] {
-        let d = event.ts.getTime();
-        let dd = Math.floor(d / this.step);
-        let res: IEventWindow[] = [];
+    public addEvent(event: IEvent): IEventWindow[] {
+        const d = event.ts.getTime();
+        const dd = Math.floor(d / this.step);
+        const res: IEventWindow[] = [];
 
         // uninitialized window, special case
         if (!this.initialized) {
@@ -56,20 +56,12 @@ export class EventWindowTracker {
         return res;
     }
 
-    private addEventInternal(event: IEvent): void {
-        this.window.push({
-            name: event.name,
-            ts: event.ts,
-            ts_d: event.ts.getTime()
-        });
-    }
-
-    getCurrentWindow(): IEventWindow {
+    public getCurrentWindow(): IEventWindow {
         if (!this.initialized) {
             return null;
         }
-        let map: IEventCounts = {};
-        for (let e of this.window) {
+        const map: IEventCounts = {};
+        for (const e of this.window) {
             if (!map[e.name]) {
                 map[e.name] = 1;
             } else {
@@ -77,10 +69,18 @@ export class EventWindowTracker {
             }
         }
         return {
-            ts_start: new Date(this.start_d),
+            names: map,
             ts_end: new Date(this.end_d),
-            names: map
+            ts_start: new Date(this.start_d)
         };
+    }
+
+    private addEventInternal(event: IEvent): void {
+        this.window.push({
+            name: event.name,
+            ts: event.ts,
+            ts_d: event.ts.getTime()
+        });
     }
 
     private advanceWindowByStep(): void {

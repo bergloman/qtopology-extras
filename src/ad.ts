@@ -25,14 +25,14 @@ export class ADEngineScalar {
         this.factory = factory;
     }
 
-    add(name: string, sample: number): void {
+    public add(name: string, sample: number): void {
         if (!this.detectors.has(name)) {
             this.detectors.set(name, this.factory.create());
         }
         this.detectors.get(name).add(sample);
     }
 
-    test(name: string, sample: number): IADProviderTestResult {
+    public test(name: string, sample: number): IADProviderTestResult {
         if (!this.detectors.has(name)) {
             this.detectors.set(name, this.factory.create());
         }
@@ -47,14 +47,14 @@ export class DummyADScalar implements IADProviderScalar {
         this.calls = [];
         this.results = results;
     }
-    add(sample: number): void {
+    public add(sample: number): void {
         this.calls.push(sample);
     }
-    test(_sample: number): IADProviderTestResult {
-        let res = this.results[0];
+    public test(_sample: number): IADProviderTestResult {
+        const res = this.results[0];
         this.results = this.results.slice(1);
         return res;
     }
 
-    getCalls() { return this.calls.slice(); }
+    public getCalls() { return this.calls.slice(); }
 }
