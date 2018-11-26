@@ -1,7 +1,7 @@
 import * as q from "./qtopology";
 import { IGdrRecord } from "../data_objects";
 
-export class ConcatTagsBolt implements q.Bolt {
+export class ConcatTagsBolt implements q.IBolt {
 
     private emit_cb: q.BoltEmitCallback;
     private new_tag_name: string;

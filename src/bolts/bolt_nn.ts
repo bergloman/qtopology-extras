@@ -4,7 +4,7 @@ import { IGdrRecord } from "../data_objects";
 
 const DETECTOR_TYPE = "kNN";
 
-export class NearestNeighborBolt implements q.Bolt {
+export class NearestNeighborBolt implements q.IBolt {
 
     private nn: NN;
     private emit_cb: q.BoltEmitCallback;

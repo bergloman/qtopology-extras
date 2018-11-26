@@ -81,7 +81,7 @@ class DataGenerator {
     }
 }
 
-export class KafkaSpout implements q.Spout {
+export class KafkaSpout implements q.ISpout {
 
     private _generator: DataGenerator;
 
@@ -162,7 +162,7 @@ export class KafkaProducer {
 
 }
 
-export class KafkaBolt implements q.Bolt {
+export class KafkaBolt implements q.IBolt {
 
     private producer: KafkaProducer;
 
