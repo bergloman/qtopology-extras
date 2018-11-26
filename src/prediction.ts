@@ -4,7 +4,7 @@ import * as qm from "qminer";
 const analytics = qm.analytics;
 const la = qm.la;
 
-export interface SingleSeriesPredictionParams {
+export interface ISingleSeriesPredictionParams {
     degree?: number;
     n?: number;
 }
@@ -15,7 +15,7 @@ export class SingleSeriesPrediction {
     private _counter: number;
     private _lin_reg: any;
 
-    constructor(options: SingleSeriesPredictionParams) {
+    constructor(options: ISingleSeriesPredictionParams) {
         options = options || {};
         const deg = options.degree || 2;
         const N = options.n || 10;
@@ -24,10 +24,10 @@ export class SingleSeriesPrediction {
         this._counter = 0;
     }
 
-    add(sample, ts) {
+    public add(sample, ts) {
         // first update linear regression
         if (this._counter > 10) {
-            let vals = new la.Vector(this._ema.getEmaValues());
+            const vals = new la.Vector(this._ema.getEmaValues());
             this._lin_reg.partialFit(vals, sample);
         }
 
@@ -36,13 +36,13 @@ export class SingleSeriesPrediction {
         this._counter++;
     }
 
-    test(sample, ts) {
-        if (this._counter < 2) return null;
-        let vals = new la.Vector(this._ema.getEmaValues());
-        let prediction = this._lin_reg.predict(vals);
+    public test(sample, ts) {
+        if (this._counter < 2) { return null; }
+        const vals = new la.Vector(this._ema.getEmaValues());
+        const prediction = this._lin_reg.predict(vals);
         return { ts, sample, prediction };
     }
 
-    getCounter() { return this._counter; }
-    getEmaValues() { return this._ema.getEmaValues(); }
+    public getCounter() { return this._counter; }
+    public getEmaValues() { return this._ema.getEmaValues(); }
 }

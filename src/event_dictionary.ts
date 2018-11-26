@@ -4,9 +4,9 @@ import { IEventCounts } from ".";
 /** This class contains dictionary for mapping events to numerics */
 export class EventDictionary {
 
-    counter: number;
-    map: qm.ht.StrIntMap;
-    inv_map: qm.ht.IntStrMap;
+    public counter: number;
+    public map: qm.ht.StrIntMap;
+    public inv_map: qm.ht.IntStrMap;
 
     constructor() {
         this.counter = 0;
@@ -18,8 +18,8 @@ export class EventDictionary {
      * This method maps event window summary to sparse vector.
      * @param data Event window summary
      */
-    createSparseVec(data: IEventCounts): number[][] {
-        let res: number[][] = [];
+    public createSparseVec(data: IEventCounts): number[][] {
+        const res: number[][] = [];
         Object.keys(data)
             .forEach(name => {
                 if (!this.map.hasKey(name)) {
@@ -27,14 +27,14 @@ export class EventDictionary {
                     this.inv_map.put(this.counter, name);
                     this.counter++;
                 }
-                let dim = this.map.get(name);
+                const dim = this.map.get(name);
                 res.push([dim, data[name]]);
-            })
+            });
         return res;
     }
 
     /** Get event name for dimension */
-    getName(dim: number): string {
+    public getName(dim: number): string {
         if (!this.inv_map.hasKey(dim)) {
             return null;
         }
@@ -45,7 +45,7 @@ export class EventDictionary {
      * Maps event name to dimension
      * @param name Event name
      */
-    getDim(name: string): number {
+    public getDim(name: string): number {
         if (!this.map.hasKey(name)) {
             return null;
         }

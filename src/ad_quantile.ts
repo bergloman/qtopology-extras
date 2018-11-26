@@ -26,26 +26,26 @@ export class QuantileAD implements IADProviderScalar {
         this.gk = new qm.analytics.quantiles.Gk({ eps: 0.0001, autoCompress: true });
     }
 
-    add(sample: number): void {
+    public add(sample: number): void {
         this.gk.insert(sample);
     }
 
-    test(sample: number): any {
-        //let cdf = this.gk.cdf(sample);
-        let cdf = this.gk.quantile(sample);
-        let threshold_cdf_low = 0.02;
-        let threshold_cdf_high = 0.98
-        let res: QuantileADResult = {
+    public test(sample: number): any {
+        // let cdf = this.gk.cdf(sample);
+        const cdf = this.gk.quantile(sample);
+        const threshold_cdf_low = 0.02;
+        const threshold_cdf_high = 0.98;
+        const res: QuantileADResult = {
+            cdf,
             is_anomaly: (cdf < threshold_cdf_low) || (cdf > threshold_cdf_high),
-            sample: sample,
-            cdf: cdf,
-            threshold_cdf_low: threshold_cdf_low,
-            threshold_cdf_high: threshold_cdf_high,
+            sample,
+            threshold_cdf_high,
+            threshold_cdf_low,
             values: {
-                sample: sample,
-                cdf: cdf,
-                threshold_cdf_low: threshold_cdf_low,
-                threshold_cdf_high: threshold_cdf_high
+                cdf,
+                sample,
+                threshold_cdf_high,
+                threshold_cdf_low
             }
         };
         return res;
@@ -71,7 +71,7 @@ export class QuantileAD2 implements IADProviderScalar {
         this.threshold_cdf_high = threshold_high;
     }
 
-    add(sample: number): void {
+    public add(sample: number): void {
         this.td.push(sample);
         if (!this.is_active) {
             this.cnt_before_active--;
@@ -79,23 +79,23 @@ export class QuantileAD2 implements IADProviderScalar {
         }
     }
 
-    test(sample: number): IADProviderTestResult {
-        let cdf = this.td.p_rank(sample);
-        let res: QuantileADResult = {
+    public test(sample: number): IADProviderTestResult {
+        const cdf = this.td.p_rank(sample);
+        const res: QuantileADResult = {
+            cdf,
             is_anomaly:
                 this.is_active && (
                     (cdf < this.threshold_cdf_low) ||
                     (cdf > this.threshold_cdf_high)
                 ),
-            sample: sample,
-            cdf: cdf,
-            threshold_cdf_low: this.threshold_cdf_low,
+            sample,
             threshold_cdf_high: this.threshold_cdf_high,
+            threshold_cdf_low: this.threshold_cdf_low,
             values: {
-                sample: sample,
-                cdf: cdf,
-                threshold_cdf_low: this.threshold_cdf_low,
-                threshold_cdf_high: this.threshold_cdf_high
+                cdf,
+                sample,
+                threshold_cdf_high: this.threshold_cdf_high,
+                threshold_cdf_low: this.threshold_cdf_low
             }
         };
         return res;
@@ -129,31 +129,31 @@ export class ZScoreAD implements IADProviderScalar {
         this.zs = new ZScore();
     }
 
-    add(sample: number): void {
+    public add(sample: number): void {
         if (this.cnt_before_active > 0) {
             this.cnt_before_active--;
         }
         this.zs.add(sample);
     }
 
-    test(x: number): IADProviderTestResult {
-        let z = this.zs.test(x);
-        let res: ZScoreADResult = {
+    public test(x: number): IADProviderTestResult {
+        const z = this.zs.test(x);
+        const res: ZScoreADResult = {
             is_anomaly:
                 (this.cnt_before_active > 0) && (
                     (this.threshold_z_pos && z > this.threshold_z_pos) ||
                     (this.threshold_z_neg && z < this.threshold_z_neg)
                 ),
             sample: x,
-            z: z,
-            threshold_z_pos: this.threshold_z_pos,
             threshold_z_neg: this.threshold_z_neg,
+            threshold_z_pos: this.threshold_z_pos,
             values: {
                 sample: x,
-                z: z,
+                threshold_z_neg: this.threshold_z_neg,
                 threshold_z_pos: this.threshold_z_pos,
-                threshold_z_neg: this.threshold_z_neg
-            }
+                z
+            },
+            z
         };
         return res;
     }
