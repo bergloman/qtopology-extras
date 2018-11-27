@@ -1,5 +1,5 @@
 {
-  "name": "tolmin",
+  "name": "qtopology-extras",
   "version": "0.1.0",
   "description": "Various utilities",
   "main": "./built/index.js",
@@ -13,11 +13,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://bergloman@bitbucket.org/bergloman/tolmin.git"
+    "url": "git+https://github.com/bergloman/qtopology-extras.git"
   },
   "author": "",
   "license": "ISC",
-  "homepage": "https://bitbucket.org/bergloman/tolmin#readme",
+  "homepage": "https://github.com/bergloman/qtopology-extras",
   "devDependencies": {
     "@types/node": "^8.0.47",
     "mocha": "^5.2.0",
