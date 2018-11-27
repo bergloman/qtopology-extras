@@ -6,8 +6,6 @@ These extensions are written in `Typescript`.
 
 ## Installation
 
-TODO publish to npm
-
 `````````````bash
 npm install qtopology-extras
 `````````````
