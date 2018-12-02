@@ -51,4 +51,9 @@ export class EventDictionary {
         }
         return this.map.get(name);
     }
+
+    /** Gets number of registered names */
+    public getEventCount(): number {
+        return this.map.length;
+    }
 }

@@ -1,12 +1,12 @@
 import * as q from "./qtopology";
-import { NN } from "../nn";
+import { NN, NNDense } from "../nn";
 import { IGdrRecord } from "../data_objects";
 
 const DETECTOR_TYPE = "kNN";
 
 export class NearestNeighborBolt implements q.IBolt {
 
-    private nn: NN;
+    private nn: NN | NNDense;
     private emit_cb: q.BoltEmitCallback;
     private source_name: string;
 
@@ -19,11 +19,16 @@ export class NearestNeighborBolt implements q.IBolt {
     public init(_name: string, config: any, _context: any, callback: q.SimpleCallback) {
         this.emit_cb = config.onEmit;
         this.source_name = config.alert_source_name;
-        this.nn = new NN({
+        const nn_params = {
             k: config.k || 1,
             max_len: config.max_len || -1,
             min_len: config.min_len || 0
-        });
+        };
+        if (config.non_normalized) {
+            this.nn = new NNDense(nn_params);
+        } else {
+            this.nn = new NN(nn_params);
+        }
         callback();
     }
 
