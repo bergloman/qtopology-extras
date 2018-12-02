@@ -101,27 +101,27 @@ describe('NN', function () {
     describe('NonNormalized', function () {
         describe('simple', function () {
             it('creatable', function () {
-                let target = new nn.NNDense({normalize: true});
+                let target = new nn.NNDense({});
             });
             it('add single', function () {
-                let target = new nn.NNDense({normalize: true});
+                let target = new nn.NNDense({});
                 target.add({ a: 2, b: 3 });
             });
             it('add single and test distances', function () {
-                let target = new nn.NNDense({normalize: true});
+                let target = new nn.NNDense({});
                 target.add({ a: 2, b: 3 });
                 assert.deepStrictEqual(target.getDistance({ a: 2, b: 3 }), { distance: 0, k: 1, input: { a: 2, b: 3 }, kNearest: { a: 2, b: 3 } });
                 tt.approxEqual(target.getDistance({ c: 2, d: 3 }).distance, 5.09902, 0.00001);
                 tt.approxEqual(target.getDistance({ a: 2, c: 3 }).distance, 4.242641, 0.00001);
             });
             it('add single and test distances', function () {
-                let target = new nn.NNDense({normalize: true});
+                let target = new nn.NNDense({});
                 target.add({ a: 1, b: 1 });
                 tt.approxEqual(target.getDistance({ a: 1, c: 1 }).distance, 1.414214, 0.000001);
                 tt.approxEqual(target.getDistance({ a: 2, c: 3 }).distance, 3.316625, 0.000001);
             });
             it('add single and test distances, under min_len', function () {
-                let target = new nn.NNDense({ min_len: 5, normalize: true });
+                let target = new nn.NNDense({ min_len: 5 });
                 target.add({ a: 2, b: 3 });
                 assert.strictEqual(target.getDistance({ a: 2, b: 3 }).distance, -1);
             });
