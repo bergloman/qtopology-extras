@@ -69,11 +69,11 @@ export class EventWindowTracker {
             }
         }
         const names = Object.keys(map);
-        const vec_len = Math.sqrt(
-            names
-                .map(x => map[x])
-                .reduce((prev, curr) => prev + curr * curr, 0)
-        );
+        let vec_len = 0;
+        for (const name of names) {
+            vec_len += map[name]*map[name];
+        }
+        vec_len = Math.sqrt(vec_len);
         return {
             names: map,
             vec_len,
