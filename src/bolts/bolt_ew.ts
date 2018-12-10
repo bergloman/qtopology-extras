@@ -44,7 +44,7 @@ export class EventWindowBolt implements q.IBolt {
             .catch(err => { callback(err); });
     }
 
-    public async sendWindow(window: IEventWindow): Promise<void> {
+    public sendWindow(window: IEventWindow): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             this.emit_cb(window, null, err => {
                 if (err) {
