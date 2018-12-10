@@ -24,6 +24,8 @@ describe('EventWindowTracker', function () {
             assert.deepEqual(target.getCurrentWindow(), {
                 ts_start: new Date(0),
                 ts_end: new Date(10),
+                vec_len: 1,
+                vec_len_one_hot: 1,
                 names: { a: 1 }
             });
         });
@@ -36,6 +38,8 @@ describe('EventWindowTracker', function () {
             assert.deepEqual(target.getCurrentWindow(), {
                 ts_start: new Date(0),
                 ts_end: new Date(10),
+                vec_len: Math.sqrt(2),
+                vec_len_one_hot: Math.sqrt(2),
                 names: { a: 1, b: 1 }
             });
         });
@@ -50,6 +54,8 @@ describe('EventWindowTracker', function () {
             assert.deepEqual(target.getCurrentWindow(), {
                 ts_start: new Date(0),
                 ts_end: new Date(10),
+                vec_len: Math.sqrt(5),
+                vec_len_one_hot: Math.sqrt(2),
                 names: { a: 2, b: 1 }
             });
         });
@@ -63,11 +69,15 @@ describe('EventWindowTracker', function () {
             assert.deepEqual(res2, [{
                 ts_start: new Date(0),
                 ts_end: new Date(10),
+                vec_len: Math.sqrt(1),
+                vec_len_one_hot: Math.sqrt(1),
                 names: { a: 1 }
             }]);
             assert.deepEqual(target.getCurrentWindow(), {
                 ts_start: new Date(10),
                 ts_end: new Date(20),
+                vec_len: Math.sqrt(1),
+                vec_len_one_hot: Math.sqrt(1),
                 names: { b: 1 }
             });
         });
@@ -79,16 +89,22 @@ describe('EventWindowTracker', function () {
             assert.deepEqual(res2, [{
                 ts_start: new Date(0),
                 ts_end: new Date(10),
+                vec_len: Math.sqrt(1),
+                vec_len_one_hot: Math.sqrt(1),
                 names: { a: 1 }
             },
             {
                 ts_start: new Date(10),
                 ts_end: new Date(20),
+                vec_len: Math.sqrt(0),
+                vec_len_one_hot: Math.sqrt(0),
                 names: []
             }]);
             assert.deepEqual(target.getCurrentWindow(), {
                 ts_start: new Date(20),
                 ts_end: new Date(30),
+                vec_len: Math.sqrt(1),
+                vec_len_one_hot: Math.sqrt(1),
                 names: { b: 1 }
             });
         });
