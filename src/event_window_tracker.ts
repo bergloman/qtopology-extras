@@ -68,8 +68,16 @@ export class EventWindowTracker {
                 map[e.name]++;
             }
         }
+        const names = Object.keys(map);
+        const vec_len = Math.sqrt(
+            names
+                .map(x => map[x])
+                .reduce((prev, curr) => prev + curr * curr, 0)
+        );
         return {
             names: map,
+            vec_len,
+            vec_len_one_hot: Math.sqrt(names.length),
             ts_end: new Date(this.end_d),
             ts_start: new Date(this.start_d)
         };

@@ -32,4 +32,6 @@ export interface IEventWindow {
     ts_start: Date;
     ts_end: Date;
     names: IEventCounts;
+    vec_len_one_hot: number;
+    vec_len: number;
 }
