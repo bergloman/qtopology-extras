@@ -76,10 +76,10 @@ export class EventWindowTracker {
         vec_len = Math.sqrt(vec_len);
         return {
             names: map,
-            vec_len,
-            vec_len_one_hot: Math.sqrt(names.length),
             ts_end: new Date(this.end_d),
-            ts_start: new Date(this.start_d)
+            ts_start: new Date(this.start_d),
+            vec_len,
+            vec_len_one_hot: Math.sqrt(names.length)
         };
     }
 
