@@ -62,7 +62,9 @@ Event windows:
         "a": 12,
         "b": 5,
         "c": 89
-    }
+    },
+    "vec_len_one_hot": 1.732,
+    "vec_len": 89.9444
 }
 ```
 
