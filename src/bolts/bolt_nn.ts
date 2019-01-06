@@ -1,6 +1,7 @@
 import * as q from "./qtopology";
-import { NN, NNDense } from "../nn";
+import { NN, NNDense, INNParams } from "../nn";
 import { IGdrRecord } from "../data_objects";
+import { EventDictionary } from "../event_dictionary";
 
 const DETECTOR_TYPE = "kNN";
 
@@ -16,10 +17,14 @@ export class NearestNeighborBolt implements q.IBolt {
         this.source_name = null;
     }
 
-    public init(_name: string, config: any, _context: any, callback: q.SimpleCallback) {
+    public init(_name: string, config: any, context: any, callback: q.SimpleCallback) {
         this.emit_cb = config.onEmit;
         this.source_name = config.alert_source_name;
-        const nn_params = {
+        if (!context.event_dictionary) {
+            context.event_dictionary = new EventDictionary();
+        }
+        const nn_params: INNParams = {
+            dictionary: context.event_dictionary,
             k: config.k || 1,
             max_len: config.max_len || -1,
             min_len: config.min_len || 0
