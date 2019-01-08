@@ -5,15 +5,25 @@ import { Triplet, Pair } from "./utils";
 
 const DETECTOR_TYPE = "SupervisedSVM";
 
+export interface IClassiffier {
+    classify: (arg: any) => number;
+}
+
+export interface IClassiffierBuilder {
+    build: (data: Array<Pair<any, number>>) => IClassiffier;
+}
+
+export interface ISupervisor {
+    isAnomaly: (arg: IEventWindow) => number;
+}
+
 export interface IADProviderEventWindowParams {
     dictionary: EventDictionary;
     alert_source_name: string;
-    n: number;
+    top_per_day: number;
     min_len: number;
-    external_evaluator: (arg: any) => number;
-    ground_truth: (arg: IEventWindow) => number;
-    external_interestingness: (arg: any) => number;
-    rebuild_model: (data: Array<Pair<any, number>>) => void;
+    supervizor: ISupervisor;
+    classifier_builder: IClassiffierBuilder;
 }
 
 export class ADProviderEventWindow {
@@ -23,12 +33,11 @@ export class ADProviderEventWindow {
     private global_batch: Array<Pair<any, number>>;
     private source_name: string;
     private next_day_switch: Date;
-    private n: number;
+    private top_per_day: number;
     private min_len: number;
-    private external_evaluator: (arg: any) => number;
-    private ground_truth: (arg: IEventWindow) => number;
-    private external_interestingness: (arg: any) => number;
-    private rebuild_model: (data: Array<Pair<any, number>>) => void;
+    private supervizor: ISupervisor;
+    private classifier_builder: IClassiffierBuilder;
+    private classifier: IClassiffier;
 
     constructor(params: IADProviderEventWindowParams) {
         this.dictionary = params.dictionary;
@@ -36,12 +45,12 @@ export class ADProviderEventWindow {
         this.daily_batch = [];
         this.global_batch = [];
         this.next_day_switch = null;
-        this.n = params.n;
+        this.top_per_day = params.top_per_day;
         this.min_len = params.min_len;
-        this.ground_truth = params.ground_truth;
-        this.external_evaluator = params.external_evaluator;
-        this.external_interestingness = params.external_interestingness;
-        this.rebuild_model = params.rebuild_model;
+
+        this.supervizor = params.supervizor;
+        this.classifier_builder = params.classifier_builder;
+        this.classifier = null;
     }
 
     public process(sample: IEventWindow): IGdrRecord {
@@ -52,23 +61,27 @@ export class ADProviderEventWindow {
 
         this.processDaySwitch(sample.ts_start);
 
-        // get classification
-        const classification = this.external_evaluator(svec);
-        if (classification !== 0) {
-            result = {
-                extra_data: {},
-                tags: {
-                    "$alert-source": this.source_name,
-                    "$alert-type": DETECTOR_TYPE
-                },
-                ts: sample.ts_start,
-                values: { classification }
-            };
+        // default measure of interestingess is the norm of the vector
+        let interestingness = svec.norm();
+
+        if (this.classifier) {
+            const classification = this.classifier.classify(svec);
+            if (classification !== 0) {
+                result = {
+                    extra_data: {},
+                    tags: {
+                        "$alert-source": this.source_name,
+                        "$alert-type": DETECTOR_TYPE
+                    },
+                    ts: sample.ts_start,
+                    values: { classification }
+                };
+            }
+            // classification score is now better measure of interestingness
+            interestingness = classification;
         }
 
-        const interestingness = this.external_interestingness(svec);
         this.daily_batch.push({ val1: sample, val2: svec, val3: interestingness });
-
         return result;
     }
 
@@ -84,17 +97,18 @@ export class ADProviderEventWindow {
             // get the most promising examples
             const db = this.daily_batch
                 .sort((a, b) => a.val3 - b.val3)
-                .slice(0, this.n);
+                .slice(0, this.top_per_day);
 
             // get external classification
             for (const example of db) {
                 this.global_batch.push({
                     val1: example.val2,
-                    val2: this.ground_truth(example.val1)
+                    val2: this.supervizor.isAnomaly(example.val1)
                 });
             }
+            // (re)build classifier if enough data has been collected
             if (this.global_batch.length >= this.min_len) {
-                this.rebuild_model(this.global_batch);
+                this.classifier = this.classifier_builder.build(this.global_batch);
             }
 
             this.daily_batch = [];
