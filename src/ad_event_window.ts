@@ -1,43 +1,37 @@
 import * as qm from "qminer";
-import { IEventWindow, IGdrRecord } from "./data_objects";
+import {
+    IEventWindow, IGdrRecord,
+    IEventWindowSupervisor, ISparseVecClassiffierBuilder, ISparseVecClassiffier,
+    SparseVec, LearningExample
+} from "./data_objects";
 import { EventDictionary } from "./event_dictionary";
-import { Triplet, Pair } from "./utils";
+import { Triplet } from "./utils";
 
 const DETECTOR_TYPE = "SupervisedSVM";
-
-export interface IClassiffier {
-    classify: (arg: any) => number;
-}
-
-export interface IClassiffierBuilder {
-    build: (data: Array<Pair<any, number>>) => IClassiffier;
-}
-
-export interface ISupervisor {
-    isAnomaly: (arg: IEventWindow) => number;
-}
 
 export interface IADProviderEventWindowParams {
     dictionary: EventDictionary;
     alert_source_name: string;
     top_per_day: number;
     min_len: number;
-    supervizor: ISupervisor;
-    classifier_builder: IClassiffierBuilder;
+    supervizor: IEventWindowSupervisor;
+    classifier_builder: ISparseVecClassiffierBuilder;
 }
+
+type DailyBatchRec = Triplet<IEventWindow, SparseVec, number>;
 
 export class ADProviderEventWindow {
 
     private dictionary: EventDictionary;
-    private daily_batch: Array<Triplet<IEventWindow, any, number>>;
-    private global_batch: Array<Pair<any, number>>;
+    private daily_batch: DailyBatchRec[];
+    private global_batch: LearningExample[];
     private source_name: string;
     private next_day_switch: Date;
     private top_per_day: number;
     private min_len: number;
-    private supervizor: ISupervisor;
-    private classifier_builder: IClassiffierBuilder;
-    private classifier: IClassiffier;
+    private supervizor: IEventWindowSupervisor;
+    private classifier_builder: ISparseVecClassiffierBuilder;
+    private classifier: ISparseVecClassiffier;
 
     constructor(params: IADProviderEventWindowParams) {
         this.dictionary = params.dictionary;
@@ -55,17 +49,15 @@ export class ADProviderEventWindow {
 
     public process(sample: IEventWindow): IGdrRecord {
 
-        const vec = this.dictionary.createSparseVec(sample.names);
-        const svec = new qm.la.SparseVector(vec);
-        let result: IGdrRecord = null;
-
         this.processDaySwitch(sample.ts_start);
 
-        // default measure of interestingess is the norm of the vector
-        let interestingness = svec.norm();
+        const vec = this.dictionary.createSparseVec(sample.names);
+        let result: IGdrRecord = null;
+
+        let interestingness = -1;
 
         if (this.classifier) {
-            const classification = this.classifier.classify(svec);
+            const classification = this.classifier.classify(vec);
             if (classification !== 0) {
                 result = {
                     extra_data: {},
@@ -79,9 +71,13 @@ export class ADProviderEventWindow {
             }
             // classification score is now better measure of interestingness
             interestingness = classification;
+        } else {
+            // default measure of interestingess is the norm of the vector
+            const svec = new qm.la.SparseVector(vec);
+            interestingness = svec.norm();
         }
 
-        this.daily_batch.push({ val1: sample, val2: svec, val3: interestingness });
+        this.daily_batch.push({ val1: sample, val2: vec, val3: interestingness });
         return result;
     }
 

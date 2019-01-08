@@ -1,5 +1,5 @@
 import * as qm from "qminer";
-import { IEventCounts } from ".";
+import { IEventCounts, SparseVec } from ".";
 
 /** This class contains dictionary for mapping events to numerics */
 export class EventDictionary {
@@ -18,7 +18,7 @@ export class EventDictionary {
      * This method maps event window summary to sparse vector.
      * @param data Event window summary
      */
-    public createSparseVec(data: IEventCounts): number[][] {
+    public createSparseVec(data: IEventCounts): SparseVec {
         const res: number[][] = [];
         Object.keys(data)
             .forEach(name => {
