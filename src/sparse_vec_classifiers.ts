@@ -12,14 +12,14 @@ export class SparseVecClassifierSVC implements ISparseVecClassiffierBuilder {
         const analytics = qm.analytics;
         const la = qm.la;
 
-        const mat = new la.Matrix([[1, 0, -1, 0], [0, 1, 0, -1]]); // TODO
-        const vec = new la.Vector(data.map(x=>x.val2));
+        const mat = new la.SparseMatrix(data.map(x => x.val1));
+        const vec = new la.Vector(data.map(x => x.val2));
 
         const svc = new analytics.SVC();
         svc.fit(mat, vec);
 
         return {
-            classify: (v: SparseVec) : number => {
+            classify: (v: SparseVec): number => {
                 const sparse_v = new la.SparseVector(v);
                 return svc.predict(sparse_v.full());
             }
