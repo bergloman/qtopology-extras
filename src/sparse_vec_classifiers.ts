@@ -21,7 +21,7 @@ export class SparseVecClassifierSVC implements ISparseVecClassiffierBuilder {
         return {
             classify: (v: SparseVec): number => {
                 const sparse_v = new la.SparseVector(v);
-                return svc.predict(sparse_v.full());
+                return svc.predict(sparse_v);
             }
         };
     }

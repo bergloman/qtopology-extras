@@ -24,6 +24,8 @@ describe('SparseVec classifiers', function () {
 
                 const res = classifier.classify([[0, 1], [2, 0]]);
                 assert.equal(res, 1);
+                const res2 = classifier.classify([[0, 1]]);
+                assert.equal(res2, 1);
             });
         });
     });
