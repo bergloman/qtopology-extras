@@ -15,5 +15,5 @@ RUN npm install
 # Copy the whitelisted files
 COPY . .
 
-# Run the tests
+RUN npm run build
 RUN npm run test
