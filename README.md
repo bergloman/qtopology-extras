@@ -262,3 +262,11 @@ Result
     "values": { "v1": 56 }
 }
 ```
+
+## Testing locally
+
+Testing can be done via docker
+
+```bash
+docker build .
+```
