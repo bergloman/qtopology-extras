@@ -28,7 +28,7 @@
         },
         {
             "name": "bolt_processing_ew",
-            "working_dir": "../../tolmin",
+            "working_dir": "../..",
             "type": "module_method",
             "cmd": "createBolts",
             "subtype": "event_window",
@@ -39,7 +39,7 @@
         },
         {
             "name": "bolt_processing_nn",
-            "working_dir": "../../tolmin",
+            "working_dir": "../..",
             "type": "module_method",
             "cmd": "createBolts",
             "subtype": "nn",
@@ -51,7 +51,7 @@
         },
         {
             "name": "bolt_processing_ad",
-            "working_dir": "../../tolmin",
+            "working_dir": "../..",
             "type": "module_method",
             "cmd": "createBolts",
             "subtype": "quantile_ad",
