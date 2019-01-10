@@ -7,7 +7,7 @@ WORKDIR /srv/github-actions-app
 # Send over the dependency definitions to the container
 
 COPY package.json ./
-#COPY package-lock.json ./
+COPY package-lock.json ./
 
 # Install the dependencies
 RUN npm install

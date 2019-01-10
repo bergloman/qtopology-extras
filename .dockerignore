@@ -6,4 +6,4 @@
 !jshint*
 !ts*.json
 !package.json
-!package-lock.lock
+!package-lock.json
