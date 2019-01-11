@@ -44,7 +44,7 @@ export type SparseVec = number[][];
 /** Learning example for classifiers */
 export type LearningExample = Pair<SparseVec, number>;
 
-/** Provides evqaluation of event-window */
+/** Provides evaluation of event-window */
 export interface IEventWindowSupervisor {
     isAnomaly: (arg: IEventWindow) => number;
 }
@@ -56,6 +56,6 @@ export interface ISparseVecClassiffier {
 
 /** Factory for binary classifier for sparse vectors */
 export interface ISparseVecClassiffierBuilder {
-    build: (data: Array<Pair<SparseVec, number>>) => ISparseVecClassiffier;
+    build: (data: LearningExample[]) => ISparseVecClassiffier;
 }
 

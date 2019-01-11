@@ -1,9 +1,13 @@
 import * as q from "./qtopology";
 import { IGdrRecord } from "../data_objects";
 
-export class ConcatTagsBolt implements q.IBolt {
+export interface IConcatTagsBoltConfig extends q.IBoltAsyncConfig {
+    new_tag_name: string;
+}
 
-    private emit_cb: q.BoltEmitCallback;
+export class ConcatTagsBolt implements q.IBoltAsync {
+
+    private emit_cb: q.BoltAsyncEmitCallback;
     private new_tag_name: string;
 
     constructor() {
@@ -11,21 +15,12 @@ export class ConcatTagsBolt implements q.IBolt {
         this.new_tag_name = null;
     }
 
-    public init(_name: string, config: any, _context: any, callback: q.SimpleCallback) {
+    public async init(_name: string, config: IConcatTagsBoltConfig, _context: any): Promise<void> {
         this.emit_cb = config.onEmit;
         this.new_tag_name = config.new_tag_name;
-        callback();
     }
 
-    public heartbeat() {
-        // no-op
-    }
-
-    public shutdown(callback: q.SimpleCallback) {
-        callback();
-    }
-
-    public receive(data: any, _stream_id: string, callback: q.SimpleCallback) {
+    public async receive(data: any, _stream_id: string): Promise<void> {
         const ddata: IGdrRecord = data as IGdrRecord;
         const new_tag_value =
             Object.keys(ddata.tags)
@@ -33,6 +28,9 @@ export class ConcatTagsBolt implements q.IBolt {
                 .map(x => x + "=" + ddata.tags[x])
                 .join(".");
         ddata.tags[this.new_tag_name] = new_tag_value;
-        this.emit_cb(ddata, null, callback);
+        await this.emit_cb(ddata, null);
     }
+
+    public heartbeat(): void { }
+    public async shutdown(): Promise<void> { }
 }

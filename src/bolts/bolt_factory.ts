@@ -4,6 +4,7 @@ import { AnomalyDetectorZScoreBolt, AnomalyDetectorQuantileBolt } from "./bolt_a
 import { NearestNeighborBolt } from "./bolt_nn";
 import { ConcatTagsBolt } from "./bolt_concat";
 import { KafkaSpout, KafkaBolt } from "./kafka";
+import { ActiveLearningEWBolt } from "./bolt_active_learning_ew";
 
 export function createBolts(subtype: string): q.IBolt {
     switch (subtype) {
@@ -13,6 +14,7 @@ export function createBolts(subtype: string): q.IBolt {
         case "nn": return new NearestNeighborBolt();
         case "concat_tags": return new ConcatTagsBolt();
         case "kafka": return new KafkaBolt();
+        case "active_learning_ew": return new ActiveLearningEWBolt();
         default: return null;
     }
 }
