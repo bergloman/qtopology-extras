@@ -3,6 +3,7 @@
         "outDir": "./built",
         "allowJs": false,
         "declaration": true,
+        "declarationMap": true,
         "sourceMap": false,
         "target": "es6",
         "lib":["es2016"],
