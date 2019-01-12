@@ -28,7 +28,11 @@ export class ActiveLearningEWBolt implements q.IBoltAsync {
             classifier_builder: new SparseVecClassifierSVC(),
             dictionary: context.event_dictionary,
             min_len: 40,
-            supervizor: null, // TODO
+            supervizor: {
+                isAnomaly: (arg: IEventWindow) => {
+                    return context.is_disruption(arg.ts_start.getTime(), arg.ts_end.getTime());
+                }
+            },
             top_per_day: 3
         });
     }
@@ -41,6 +45,10 @@ export class ActiveLearningEWBolt implements q.IBoltAsync {
         }
     }
 
-    public heartbeat(): void { }
-    public async shutdown(): Promise<void> { }
+    public heartbeat(): void {
+        // empty
+    }
+    public async shutdown(): Promise<void> {
+        // empty
+    }
 }

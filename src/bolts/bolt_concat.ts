@@ -31,6 +31,11 @@ export class ConcatTagsBolt implements q.IBoltAsync {
         await this.emit_cb(ddata, null);
     }
 
-    public heartbeat(): void { }
-    public async shutdown(): Promise<void> { }
+    public heartbeat(): void {
+        // empty
+    }
+
+    public async shutdown(): Promise<void> {
+        // empty
+    }
 }
