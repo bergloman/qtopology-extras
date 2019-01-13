@@ -1,5 +1,5 @@
 import * as q from "./qtopology";
-import { IEventWindow } from "../data_objects";
+import { IEventWindow, IEventWindowSupervisor } from "../data_objects";
 import { ADProviderEventWindow } from "../ad_event_window";
 import { SparseVecClassifierSVC } from "../sparse_vec_classifiers";
 import { EventDictionary } from "../event_dictionary";
@@ -23,16 +23,18 @@ export class ActiveLearningEWBolt implements q.IBoltAsync {
         if (!context.event_dictionary) {
             context.event_dictionary = new EventDictionary();
         }
+        const supervizor: IEventWindowSupervisor = {
+            isAnomaly: (arg: IEventWindow) => {
+                console.log("Disruption test", arg.ts_start.toISOString(), arg.ts_end.toISOString());
+                return context.isDisruption(arg.ts_start.getTime(), arg.ts_end.getTime());
+            }
+        };
         this.ad_ex = new ADProviderEventWindow({
             alert_source_name: "active-learning-ad",
             classifier_builder: new SparseVecClassifierSVC(),
             dictionary: context.event_dictionary,
             min_len: 40,
-            supervizor: {
-                isAnomaly: (arg: IEventWindow) => {
-                    return context.is_disruption(arg.ts_start.getTime(), arg.ts_end.getTime());
-                }
-            },
+            supervizor,
             top_per_day: 3
         });
     }

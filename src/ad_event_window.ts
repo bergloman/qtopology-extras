@@ -57,7 +57,15 @@ export class ADProviderEventWindow {
         let interestingness = -1;
 
         if (this.classifier) {
-            const classification = this.classifier.classify(vec);
+            let classification = 0;
+            try {
+                classification = this.classifier.classify(vec);
+            } catch (e) {
+                console.log("ERROR");
+                console.log(sample);
+                console.log(e);
+
+            }
             if (classification !== 0) {
                 result = {
                     extra_data: {},
@@ -88,23 +96,36 @@ export class ADProviderEventWindow {
             return;
         }
         if (ts > this.next_day_switch) {
+            console.log("Processing day switch - " + this.next_day_switch.toISOString());
             this.setNewDaySwitch(ts);
 
             // get the most promising examples
+            console.log("Getting most promising examples...");
             const db = this.daily_batch
-                .sort((a, b) => a.val3 - b.val3)
+                .sort((a, b) => b.val3 - a.val3) // sort descending
                 .slice(0, this.top_per_day);
 
             // get external classification
+            console.log("Getting external classification...");
             for (const example of db) {
                 this.global_batch.push({
                     val1: example.val2,
                     val2: this.supervizor.isAnomaly(example.val1)
                 });
             }
+            console.log("Number of all examples", this.global_batch.length);
+            const tp = this.global_batch.filter(x => x.val2).length;
+            console.log("Number of positive examples", tp);
+
             // (re)build classifier if enough data has been collected
-            if (this.global_batch.length >= this.min_len) {
-                this.classifier = this.classifier_builder.build(this.global_batch);
+            if (this.global_batch.length >= this.min_len && tp > 0) {
+                console.log("Re-building model");
+                try {
+                    this.classifier = this.classifier_builder.build(this.global_batch);
+                } catch (e) {
+                    console.log("$$$$$$$$$$$$$$$$$$ error");
+                    console.log(e);
+                }
             }
 
             this.daily_batch = [];
