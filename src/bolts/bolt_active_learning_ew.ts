@@ -24,7 +24,7 @@ export class ActiveLearningEWBolt implements q.IBoltAsync {
             context.event_dictionary = new EventDictionary();
         }
         const supervizor: IEventWindowSupervisor = {
-            isAnomaly: (arg: IEventWindow) => {
+            isAnomaly: (arg: IEventWindow): boolean => {
                 console.log("Disruption test", arg.ts_start.toISOString(), arg.ts_end.toISOString());
                 return context.isDisruption(arg.ts_start.getTime(), arg.ts_end.getTime());
             }

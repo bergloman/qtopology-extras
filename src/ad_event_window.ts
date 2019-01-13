@@ -1,4 +1,5 @@
 import * as qm from "qminer";
+import * as fs from "fs";
 import {
     IEventWindow, IGdrRecord,
     IEventWindowSupervisor, ISparseVecClassiffierBuilder, ISparseVecClassiffier,
@@ -54,7 +55,9 @@ export class ADProviderEventWindow {
         const vec = this.dictionary.createSparseVec(sample.names);
         let result: IGdrRecord = null;
 
-        let interestingness = -1;
+        // default measure of interestingess is the norm of the vector
+        const svec = new qm.la.SparseVector(vec);
+        let interestingness = svec.norm();
 
         if (this.classifier) {
             let classification = 0;
@@ -66,7 +69,7 @@ export class ADProviderEventWindow {
                 console.log(e);
 
             }
-            if (classification !== 0) {
+            if (classification > 0) {
                 result = {
                     extra_data: {},
                     tags: {
@@ -76,13 +79,8 @@ export class ADProviderEventWindow {
                     ts: sample.ts_start,
                     values: { classification }
                 };
+                interestingness += 1000;
             }
-            // classification score is now better measure of interestingness
-            interestingness = classification;
-        } else {
-            // default measure of interestingess is the norm of the vector
-            const svec = new qm.la.SparseVector(vec);
-            interestingness = svec.norm();
         }
 
         this.daily_batch.push({ val1: sample, val2: vec, val3: interestingness });
@@ -100,28 +98,32 @@ export class ADProviderEventWindow {
             this.setNewDaySwitch(ts);
 
             // get the most promising examples
-            console.log("Getting most promising examples...");
+            //console.log("Getting most promising examples...");
             const db = this.daily_batch
                 .sort((a, b) => b.val3 - a.val3) // sort descending
                 .slice(0, this.top_per_day);
 
             // get external classification
-            console.log("Getting external classification...");
+            //console.log("Getting external classification...");
             for (const example of db) {
                 this.global_batch.push({
                     val1: example.val2,
-                    val2: this.supervizor.isAnomaly(example.val1)
+                    val2: this.supervizor.isAnomaly(example.val1) ? 1 : -1
                 });
             }
-            console.log("Number of all examples", this.global_batch.length);
-            const tp = this.global_batch.filter(x => x.val2).length;
-            console.log("Number of positive examples", tp);
+            const tp = this.global_batch.filter(x => x.val2 > 0).length;
+            console.log("Number of all examples", this.global_batch.length, "positive examples", tp);
 
             // (re)build classifier if enough data has been collected
             if (this.global_batch.length >= this.min_len && tp > 0) {
                 console.log("Re-building model");
                 try {
                     this.classifier = this.classifier_builder.build(this.global_batch);
+                    fs.writeFileSync(
+                        "D:\\Documents\\Viktor\\programming\\github\\phd\\src\\fsada\\out\\global_batch.ldjson",
+                        JSON.stringify(this.global_batch, null, "  "),
+                        { encoding: "utf8" }
+                    );
                 } catch (e) {
                     console.log("$$$$$$$$$$$$$$$$$$ error");
                     console.log(e);

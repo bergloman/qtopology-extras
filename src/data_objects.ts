@@ -46,7 +46,7 @@ export type LearningExample = Pair<SparseVec, number>;
 
 /** Provides evaluation of event-window */
 export interface IEventWindowSupervisor {
-    isAnomaly: (arg: IEventWindow) => number;
+    isAnomaly: (arg: IEventWindow) => boolean;
 }
 
 /** Binary classifier for sparse vectors */
