@@ -62,12 +62,13 @@ export class ADProviderEventWindow {
         if (this.classifier) {
             let classification = 0;
             try {
+                console.log("#1");
                 classification = this.classifier.classify(vec);
+                console.log("#2");
             } catch (e) {
                 console.log("ERROR");
                 console.log(sample);
                 console.log(e);
-
             }
             if (classification > 0) {
                 result = {
@@ -98,13 +99,13 @@ export class ADProviderEventWindow {
             this.setNewDaySwitch(ts);
 
             // get the most promising examples
-            //console.log("Getting most promising examples...");
+            // console.log("Getting most promising examples...");
             const db = this.daily_batch
                 .sort((a, b) => b.val3 - a.val3) // sort descending
                 .slice(0, this.top_per_day);
 
             // get external classification
-            //console.log("Getting external classification...");
+            // console.log("Getting external classification...");
             for (const example of db) {
                 this.global_batch.push({
                     val1: example.val2,
@@ -120,10 +121,11 @@ export class ADProviderEventWindow {
                 try {
                     this.classifier = this.classifier_builder.build(this.global_batch);
                     fs.writeFileSync(
-                        "D:\\Documents\\Viktor\\programming\\github\\phd\\src\\fsada\\out\\global_batch.ldjson",
+                        ".\\out\\global_batch.ldjson",
                         JSON.stringify(this.global_batch, null, "  "),
                         { encoding: "utf8" }
                     );
+                    console.log("*");
                 } catch (e) {
                     console.log("$$$$$$$$$$$$$$$$$$ error");
                     console.log(e);

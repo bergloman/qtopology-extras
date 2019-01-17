@@ -40,11 +40,13 @@ export class ActiveLearningEWBolt implements q.IBoltAsync {
     }
 
     public async receive(data: any, _stream_id: string): Promise<void> {
+        console.log("%");
         const ddata = data as IEventWindow;
         const alert = this.ad_ex.process(ddata);
         if (alert) {
             await this.emit_cb(alert, null);
         }
+        console.log("!");
     }
 
     public heartbeat(): void {
