@@ -18,6 +18,18 @@ export interface IGdrRecord {
     extra_data?: any;
 }
 
+/** Timeseries point */
+export type TsPoint = {
+    val: number;
+    ts: Date;
+}
+
+/** Timeseries point with timestamp as number */
+export type TsPointN = {
+    val: number;
+    ts: number;
+}
+
 /** Simple event */
 export interface IEvent {
     name: string;
@@ -43,6 +55,9 @@ export type SparseVec = number[][];
 
 /** Learning example for classifiers */
 export type LearningExample = Pair<SparseVec, number>;
+
+/** Learning example for classifiers - dense */
+export type LearningExampleDense = Pair<number[], number>;
 
 /** Provides evaluation of event-window */
 export interface IEventWindowSupervisor {
