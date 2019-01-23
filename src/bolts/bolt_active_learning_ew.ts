@@ -25,7 +25,7 @@ export class ActiveLearningEWBolt implements q.IBoltAsync {
         }
         const supervizor: IEventWindowSupervisor = {
             isAnomaly: (arg: IEventWindow): boolean => {
-                console.log("Disruption test", arg.ts_start.toISOString(), arg.ts_end.toISOString());
+                //console.log("Disruption test", arg.ts_start.toISOString(), arg.ts_end.toISOString());
                 return context.isDisruption(arg.ts_start.getTime(), arg.ts_end.getTime());
             }
         };
@@ -40,13 +40,13 @@ export class ActiveLearningEWBolt implements q.IBoltAsync {
     }
 
     public async receive(data: any, _stream_id: string): Promise<void> {
-        console.log("%");
+        //console.log("%");
         const ddata = data as IEventWindow;
         const alert = this.ad_ex.process(ddata);
         if (alert) {
             await this.emit_cb(alert, null);
         }
-        console.log("!");
+        //console.log("!");
     }
 
     public heartbeat(): void {
