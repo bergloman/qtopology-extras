@@ -1,5 +1,6 @@
 import { TsPointN, LearningExampleDense, TsPoint } from "./data_objects";
 import { Triplet } from "./utils";
+import { Ema } from "./ema";
 
 
 export class Resampler {
@@ -33,18 +34,21 @@ export class TimeseriesWindowHandler {
 
     private window: number[];
     private win_len: number;
+    private ema: Ema;
 
-    constructor() {
+    constructor(win_len: number, degrees?: number) {
         this.window = [];
-        this.win_len = 6;
+        this.win_len = win_len;
+        this.ema = new Ema({ alpha: 0.2, degrees: degrees || 2 });
     }
 
     public isReady(): boolean {
         return (this.window.length >= this.win_len);
     }
 
-    public add(rec: number): void {
-        this.window.push(rec);
+    public add(rec: TsPointN): void {
+        this.window.push(rec.val);
+        this.ema.add(rec.val, rec.ts);
         if (this.window.length > this.win_len) {
             this.window = this.window.slice(this.window.length - this.win_len);
         }
@@ -55,17 +59,15 @@ export class TimeseriesWindowHandler {
             return null;
         }
 
-        const res: number[] = [];
+        const res: number[] = this.ema.getEmaValues();
         let avg: number = 0;
         for (let val of this.window) {
             avg += val;
         }
         avg /= this.win_len;
-
         res.push(avg);
 
         return res;
-
     }
 }
 
@@ -105,8 +107,8 @@ export class TimeSeriesPredictor {
         }
     }
 
-    public predict(ts: Date): number {
-        const rec: number[] = this.createTimestampFeatures(ts);
+    public predict(_ts: Date): number {
+        //const rec: number[] = this.createTimestampFeatures(ts);
         return 0;
     }
 
