@@ -40,7 +40,12 @@ export class Ema {
         const new_vals = [sample];
         const ts_diff = ts - this._prev_ts;
         for (let i = 1; i <= this._degrees; i++) {
-            const ema_new = ema(this._alpha, new_vals[i - 1], this._prev_ema[i - 1], ts_diff, this._prev_ema[i]);
+            const ema_new = ema(
+                this._alpha,
+                new_vals[i - 1],
+                this._prev_ema[i - 1],
+                ts_diff,
+                this._prev_ema[i]);
             new_vals.push(ema_new);
         }
         this._prev_ema = new_vals;
