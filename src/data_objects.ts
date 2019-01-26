@@ -19,15 +19,15 @@ export interface IGdrRecord {
 }
 
 /** Timeseries point */
-export type TsPoint = {
-    val: number;
-    ts: Date;
+export class TsPoint {
+    public val: number;
+    public ts: Date;
 }
 
 /** Timeseries point with timestamp as number */
-export type TsPointN = {
-    val: number;
-    ts: number;
+export class TsPointN {
+    public val: number;
+    public ts: number;
 }
 
 /** Simple event */
@@ -72,5 +72,15 @@ export interface ISparseVecClassiffier {
 /** Factory for binary classifier for sparse vectors */
 export interface ISparseVecClassiffierBuilder {
     build: (data: LearningExample[]) => ISparseVecClassiffier;
+}
+
+/** Regression for dense vectors */
+export interface IRegression {
+    predict: (arg: number[]) => number;
+}
+
+/** Factory for regression */
+export interface IRegressionBuilder {
+    build: (data: LearningExampleDense[]) => IRegression;
 }
 
