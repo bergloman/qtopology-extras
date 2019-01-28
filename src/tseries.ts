@@ -1,6 +1,6 @@
 import { TsPointN } from "./data_objects";
 import { Triplet } from "./utils";
-import { Ema } from "./ema";
+import { Ema, RunningStats } from "./ema";
 
 /**
  * Class that performs resampling to predefined intervals,
@@ -23,13 +23,61 @@ export class Resampler {
         const res: TsPointN[] = [];
         if (this.lastVal) {
             while (this.next <= rec.ts) {
-                res.push({ ts: this.next/this.period, val: this.lastVal.val });
+                res.push({ ts: this.next / this.period, val: this.lastVal.val });
                 this.next += this.period;
             }
         } else {
             this.next = (Math.floor(rec.ts / this.period) + 1) * this.period;
         }
         this.lastVal = rec;
+        return res;
+    }
+}
+
+/**
+ * Class that performs regulariation - mapping to interval [0, 1].
+ * Actually, it observes predefined number of values, then calculates
+ * mean and variance from the samples. After that it maps all incoming data
+ * y = 0.5 + (x - mean) / std_var / 3
+ */
+export class Regularizator {
+
+    private buffer: TsPointN[];
+    private delay: number;
+    private stats: RunningStats;
+    private avg: number;
+    private stdev: number;
+
+    constructor(delay: number) {
+        this.buffer = [];
+        this.delay = delay;
+        this.stats = new RunningStats();
+        this.avg = 0;
+        this.stdev = 0;
+    }
+
+    /** Receives a new timepoint and returns resampled array of points. */
+    public add(rec: TsPointN): TsPointN[] {
+        const res: TsPointN[] = [];
+        if (this.delay > 0) {
+            this.buffer.push(rec);
+            this.stats.add(rec.val);
+            this.delay--;
+            if (this.delay == 0) {
+                this.avg = this.stats.getAvg();
+                this.stdev = this.stats.getStdDev();
+                if (this.stdev === 0) {
+                    this.stdev = 1;
+                }
+                this.stats = null;
+                this.buffer.forEach(x => {
+                    res.push({ ts: x.ts, val: 0.5 + (x.val - this.avg) / this.stdev / 3 });
+                });
+                this.buffer = [];
+            }
+        } else {
+            res.push({ ts: rec.ts, val: 0.5 + (rec.val - this.avg) / this.stdev / 3 });
+        }
         return res;
     }
 }
@@ -189,7 +237,7 @@ export class TimeSeriesPredictionDataCollector {
 export class TimeSeriesPredictor {
 
     private data_collector: TimeSeriesPredictionDataCollector;
-    
+
     /** Simple constructor */
     constructor() {
         this.data_collector = new TimeSeriesPredictionDataCollector(10 * 60 * 1000);

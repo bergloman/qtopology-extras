@@ -1,6 +1,7 @@
 import {
     LearningExample, SparseVec,
-    ISparseVecClassiffier, ISparseVecClassiffierBuilder, IRegressionBuilder, IRegression, LearningExampleDense
+    ISparseVecClassiffier, ISparseVecClassiffierBuilder,
+    IRegressionBuilder, IRegression, LearningExampleDense
 } from "./data_objects";
 
 import * as qm from "qminer";
@@ -56,15 +57,15 @@ export class RidgeRegression implements IRegressionBuilder {
         const analytics = qm.analytics;
         const la = qm.la;
 
-        const A = new la.Matrix(data.map(x => x.val1));
+        const A = new la.Matrix(data.map(x => x.val1)).transpose();
         const b = new la.Vector(data.map(x => x.val2));
 
         const regmod = new analytics.RidgeReg({ gamma: 1.0 });
         regmod.fit(A, b);
 
-        const res:IRegression =  {
+        const res: IRegression = {
             predict: (input: number[]): number => {
-                const v = new la.vector(input);
+                const v = new la.Vector(input);
                 return regmod.predict(v);
             }
         };
