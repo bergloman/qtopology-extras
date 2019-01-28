@@ -19,13 +19,25 @@ export interface IGdrRecord {
 }
 
 /** Timeseries point */
-export class TsPoint {
+export interface ITsPoint {
+    val: number;
+    ts: Date;
+}
+
+/** Timeseries point */
+export class TsPoint implements ITsPoint {
     public val: number;
     public ts: Date;
 }
 
 /** Timeseries point with timestamp as number */
-export class TsPointN {
+export interface ITsPointN {
+    val: number;
+    ts: number;
+}
+
+/** Timeseries point with timestamp as number */
+export class TsPointN implements ITsPointN {
     public val: number;
     public ts: number;
 }

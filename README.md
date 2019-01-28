@@ -40,6 +40,25 @@ This repository contains the following extensions:
     }
 }
 ```
+### Time-series data
+
+Time-series contains numeric  value and timestamp in ISO format
+
+```json
+{
+    "ts": "2018-09-29T12:34:56",
+    "val": 83.21
+}
+```
+
+However, internally we often use numeric version of time (Unix timestamp):
+
+```json
+{
+    "ts": 1538224496000,
+    "val": 83.21
+}
+```
 
 ### Events
 
@@ -217,6 +236,14 @@ Example output contains same tags:
 ```
 
 ## Utilites
+
+### Resampler
+
+TODO
+
+### Regularizator
+
+TODO
 
 ### Tag concatenation
 

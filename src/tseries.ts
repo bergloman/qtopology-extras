@@ -1,4 +1,4 @@
-import { TsPointN } from "./data_objects";
+import { TsPointN, ITsPointN } from "./data_objects";
 import { Triplet } from "./utils";
 import { Ema, RunningStats } from "./ema";
 
@@ -8,7 +8,7 @@ import { Ema, RunningStats } from "./ema";
  */
 export class Resampler {
 
-    private lastVal: TsPointN;
+    private lastVal: ITsPointN;
     private period: number;
     private next: number;
 
@@ -19,7 +19,7 @@ export class Resampler {
     }
 
     /** Receives a new timepoint and returns resampleld array of points. */
-    public add(rec: TsPointN): TsPointN[] {
+    public add(rec: ITsPointN): TsPointN[] {
         const res: TsPointN[] = [];
         if (this.lastVal) {
             while (this.next <= rec.ts) {

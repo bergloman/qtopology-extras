@@ -5,11 +5,15 @@ import { NearestNeighborBolt } from "./bolt_nn";
 import { ConcatTagsBolt } from "./bolt_concat";
 import { KafkaSpout, KafkaBolt } from "./kafka";
 import { ActiveLearningEWBolt } from "./bolt_active_learning_ew";
+import { ResamplerBolt } from "./bolt_resampler";
+import { RegularizatorBolt } from "./bolt_regularizator";
 
 export function createBolts(subtype: string): q.IBolt {
     switch (subtype) {
         case "quantile_ad": return new AnomalyDetectorQuantileBolt();
         case "zscore_ad": return new AnomalyDetectorZScoreBolt();
+        case "resampler": return new ResamplerBolt();
+        case "regularizator": return new RegularizatorBolt();
         case "event_window": return new EventWindowBolt();
         case "nn": return new NearestNeighborBolt();
         case "concat_tags": return new ConcatTagsBolt();
