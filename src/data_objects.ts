@@ -42,6 +42,26 @@ export class TsPointN implements ITsPointN {
     public ts: number;
 }
 
+/** Metric - named timeseries point */
+export interface IMetric extends ITsPoint {
+    name: string;
+}
+
+/** Metric - named timeseries point */
+export class Metric extends TsPoint implements IMetric  {
+    public name: string;
+}
+
+/** Metric - named timeseries point */
+export interface IMetricN extends ITsPointN {
+    name: string;
+}
+
+/** Metric - named timeseries point */
+export class MetricN extends TsPointN implements IMetricN  {
+    public name: string;
+}
+
 /** Simple event */
 export interface IEvent {
     name: string;

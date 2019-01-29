@@ -18,9 +18,9 @@ export class Resampler {
         this.next = -1;
     }
 
-    /** Receives a new timepoint and returns resampleld array of points. */
-    public add(rec: ITsPointN): TsPointN[] {
-        const res: TsPointN[] = [];
+    /** Receives a new timepoint and returns resampled array of points. */
+    public add(rec: ITsPointN): ITsPointN[] {
+        const res: ITsPointN[] = [];
         if (this.lastVal) {
             while (this.next <= rec.ts) {
                 res.push({ ts: this.next / this.period, val: this.lastVal.val });
@@ -62,8 +62,8 @@ export class Regularizator {
     }
 
     /** Receives a new timepoint and returns regularized array of points. */
-    public add(rec: TsPointN): TsPointN[] {
-        const res: TsPointN[] = [];
+    public add(rec: ITsPointN): ITsPointN[] {
+        const res: ITsPointN[] = [];
         if (this.delay > 0) {
             if (this.reemit_delay) {
                 this.buffer.push(rec);
@@ -117,8 +117,8 @@ export class Normalizator {
     }
 
     /** Receives a new timepoint and returns normalized array of points. */
-    public add(rec: TsPointN): TsPointN[] {
-        const res: TsPointN[] = [];
+    public add(rec: ITsPointN): ITsPointN[] {
+        const res: ITsPointN[] = [];
         if (this.delay > 0) {
             if (this.reemit_delay) {
                 this.buffer.push(rec);
