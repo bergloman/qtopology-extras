@@ -49,12 +49,32 @@ describe('TSeries - Regularizator', function () {
         let target = new ts.Regularizator(10);
     });
     it('1 data point', function () {
-        let target = new ts.Regularizator(1);
+        let target = new ts.Regularizator(1, false);
+        let res = target.add({ ts: 12, val: 10 });
+        assert.deepEqual(res, []);
+        res = target.add({ ts: 14, val: 10 });
+        assert.deepEqual(res, [{ ts: 14, val: 0.5 }]);
+    });
+    it('1 data point - re-emit', function () {
+        let target = new ts.Regularizator(1, true);
         let res = target.add({ ts: 12, val: 10 });
         assert.deepEqual(res, [{ ts: 12, val: 0.5 }]);
+        res = target.add({ ts: 14, val: 10 });
+        assert.deepEqual(res, [{ ts: 14, val: 0.5 }]);
     });
-    it('2 data points', function () {
-        let target = new ts.Regularizator(2);
+    it('2 data points - no re-emit', function () {
+        let target = new ts.Regularizator(2, false);
+        let res = target.add({ ts: 1, val: 10 });
+        assert.deepEqual(res, []);
+        let res2 = target.add({ ts: 2, val: 20 });
+        assert.deepEqual(res2, []);
+        let res3 = target.add({ ts: 3, val: 20 });
+        assert.strictEqual(res3.length, 1);
+        assert.strictEqual(res3[0].ts, 3);
+        assertUtils.approxEqual(res3[0].val, 0.735702, 0.00001);
+    });
+    it('2 data points - re-emit', function () {
+        let target = new ts.Regularizator(2, true);
         let res = target.add({ ts: 1, val: 10 });
         assert.deepEqual(res, []);
         let res2 = target.add({ ts: 2, val: 20 });
@@ -63,6 +83,57 @@ describe('TSeries - Regularizator', function () {
         assertUtils.approxEqual(res2[0].val, 0.264298, 0.00001);
         assert.strictEqual(res2[1].ts, 2);
         assertUtils.approxEqual(res2[1].val, 0.735702, 0.00001);
+    });
+});
+
+describe('TSeries - Normalizer', function () {
+    it('no data', function () {
+        let target = new ts.Normalizator(10);
+    });
+    it('1 data point - no re-emit', function () {
+        let target = new ts.Normalizator(1, false);
+        let res = target.add({ ts: 12, val: 10 });
+        assert.deepEqual(res, []);
+        res = target.add({ ts: 14, val: 10 });
+        assert.deepEqual(res, [{ ts: 14, val: 0 }]);
+    });
+    it('1 data point - re-emit', function () {
+        let target = new ts.Normalizator(1, true);
+        let res = target.add({ ts: 12, val: 10 });
+        assert.deepEqual(res, [{ ts: 12, val: 0 }]);
+    });
+    it('2 data points - no re-emit', function () {
+        let target = new ts.Normalizator(2, false);
+        let res = target.add({ ts: 1, val: 10 });
+        assert.deepEqual(res, []);
+        let res2 = target.add({ ts: 2, val: 20 });
+        assert.strictEqual(res2.length, 0);
+        res2 = target.add({ ts: 3, val: 20 });
+        assert.strictEqual(res2.length, 1);
+        assert.strictEqual(res2[0].ts, 3);
+        assertUtils.approxEqual(res2[0].val, Math.sqrt(2) / 2, 0.00001);
+    });
+    it('2 data points - no re-emit implicit', function () {
+        let target = new ts.Normalizator(2);
+        let res = target.add({ ts: 1, val: 10 });
+        assert.deepEqual(res, []);
+        let res2 = target.add({ ts: 2, val: 20 });
+        assert.strictEqual(res2.length, 0);
+        res2 = target.add({ ts: 3, val: 20 });
+        assert.strictEqual(res2.length, 1);
+        assert.strictEqual(res2[0].ts, 3);
+        assertUtils.approxEqual(res2[0].val, Math.sqrt(2) / 2, 0.00001);
+    });
+    it('2 data points - re-emit', function () {
+        let target = new ts.Normalizator(2, true);
+        let res = target.add({ ts: 1, val: 10 });
+        assert.deepEqual(res, []);
+        let res2 = target.add({ ts: 2, val: 20 });
+        assert.strictEqual(res2.length, 2);
+        assert.strictEqual(res2[0].ts, 1);
+        assertUtils.approxEqual(res2[0].val, -Math.sqrt(2) / 2, 0.00001);
+        assert.strictEqual(res2[1].ts, 2);
+        assertUtils.approxEqual(res2[1].val, Math.sqrt(2) / 2, 0.00001);
     });
 });
 

@@ -37,30 +37,37 @@ export class Resampler {
 /**
  * Class that performs regulariation - mapping to interval [0, 1].
  * Actually, it observes predefined number of values, then calculates
- * mean and variance from the samples. After that it maps all incoming data
+ * mean and variance from the samples. After that it maps all incoming data as
+ * 
  * y = 0.5 + (x - mean) / std_var / 3
+ * 
+ * This means that the result might be outside [0, 1] interval, but not by much.
  */
 export class Regularizator {
 
     private buffer: TsPointN[];
     private delay: number;
+    private reemit_delay: boolean;
     private stats: RunningStats;
     private avg: number;
     private stdev: number;
 
-    constructor(delay: number) {
+    constructor(delay: number, reemit_delay?: boolean) {
         this.buffer = [];
         this.delay = delay;
+        this.reemit_delay = reemit_delay;
         this.stats = new RunningStats();
         this.avg = 0;
         this.stdev = 0;
     }
 
-    /** Receives a new timepoint and returns resampled array of points. */
+    /** Receives a new timepoint and returns regularized array of points. */
     public add(rec: TsPointN): TsPointN[] {
         const res: TsPointN[] = [];
         if (this.delay > 0) {
-            this.buffer.push(rec);
+            if (this.reemit_delay) {
+                this.buffer.push(rec);
+            }
             this.stats.add(rec.val);
             this.delay--;
             if (this.delay == 0) {
@@ -70,13 +77,70 @@ export class Regularizator {
                     this.stdev = 1;
                 }
                 this.stats = null;
-                this.buffer.forEach(x => {
-                    res.push({ ts: x.ts, val: 0.5 + (x.val - this.avg) / this.stdev / 3 });
-                });
-                this.buffer = [];
+                if (this.reemit_delay) {
+                    this.buffer.forEach(x => {
+                        res.push({ ts: x.ts, val: 0.5 + (x.val - this.avg) / this.stdev / 3 });
+                    });
+                    this.buffer = [];
+                }
             }
         } else {
             res.push({ ts: rec.ts, val: 0.5 + (rec.val - this.avg) / this.stdev / 3 });
+        }
+        return res;
+    }
+}
+
+/**
+ * Class that performs normalization - to a distribution that has mean 0 and variance 1.
+ * Actually, it observes predefined number of values, then calculates
+ * mean and variance from the samples. After that it maps all incoming data as
+ * 
+ * y = (x - mean) / std_var
+ */
+export class Normalizator {
+
+    private buffer: TsPointN[];
+    private delay: number;
+    private reemit_delay: boolean;
+    private stats: RunningStats;
+    private avg: number;
+    private stdev: number;
+
+    constructor(delay: number, reemit_delay?: boolean) {
+        this.buffer = [];
+        this.delay = delay;
+        this.reemit_delay = reemit_delay;
+        this.stats = new RunningStats();
+        this.avg = 0;
+        this.stdev = 0;
+    }
+
+    /** Receives a new timepoint and returns normalized array of points. */
+    public add(rec: TsPointN): TsPointN[] {
+        const res: TsPointN[] = [];
+        if (this.delay > 0) {
+            if (this.reemit_delay) {
+                this.buffer.push(rec);
+            }
+            this.stats.add(rec.val);
+            this.delay--;
+            if (this.delay == 0) {
+                this.avg = this.stats.getAvg();
+                this.stdev = this.stats.getStdDev();
+                if (this.stdev === 0) {
+                    this.stdev = 1;
+                }
+                this.stats = null;
+                if (this.reemit_delay) {
+                    this.buffer.forEach(x => {
+                        res.push({ ts: x.ts, val: (x.val - this.avg) / this.stdev });
+                    });
+                    this.buffer = [];
+                }
+            }
+        } else {
+            res.push({ ts: rec.ts, val: (rec.val - this.avg) / this.stdev });
         }
         return res;
     }
