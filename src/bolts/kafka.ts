@@ -176,7 +176,7 @@ export class KafkaBolt implements q.IBolt {
         this.producer = new KafkaProducer(config.host, config.topic, callback);
     }
 
-    public heartbeat() {
+    public prepareTransform() {
         // no-op
     }
 
@@ -186,5 +186,9 @@ export class KafkaBolt implements q.IBolt {
 
     public receive(data: any, _stream_id: string, callback: q.SimpleCallback) {
         this.producer.send(data, callback);
+    }
+
+    public heartbeat(): void {
+        // no-op
     }
 }

@@ -36,12 +36,16 @@ export abstract class AnomalyDetectorBaseBolt implements q.IBolt {
 
     public abstract innerInit(config: any): t.IADProviderScalarFactory;
 
-    public heartbeat() {
+    public prepareTransform() {
         // no-op
     }
 
     public shutdown(callback: q.SimpleCallback) {
         callback();
+    }
+
+    public heartbeat(): void {
+        // no-op
     }
 
     public receive(data: any, _stream_id: string, callback: q.SimpleCallback) {

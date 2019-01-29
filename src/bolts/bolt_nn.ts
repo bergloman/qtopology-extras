@@ -37,12 +37,16 @@ export class NearestNeighborBolt implements q.IBolt {
         callback();
     }
 
-    public heartbeat() {
+    public prepareTransform() {
         // no-op
     }
 
     public shutdown(callback: q.SimpleCallback) {
         callback();
+    }
+
+    public heartbeat(): void {
+        // no-op
     }
 
     public receive(data: any, _stream_id: string, callback: q.SimpleCallback) {

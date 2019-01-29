@@ -48,7 +48,7 @@ export interface IMetric extends ITsPoint {
 }
 
 /** Metric - named timeseries point */
-export class Metric extends TsPoint implements IMetric  {
+export class Metric extends TsPoint implements IMetric {
     public name: string;
 }
 
@@ -58,7 +58,7 @@ export interface IMetricN extends ITsPointN {
 }
 
 /** Metric - named timeseries point */
-export class MetricN extends TsPointN implements IMetricN  {
+export class MetricN extends TsPointN implements IMetricN {
     public name: string;
 }
 

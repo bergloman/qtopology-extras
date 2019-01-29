@@ -7,6 +7,7 @@ import { KafkaSpout, KafkaBolt } from "./kafka";
 import { ActiveLearningEWBolt } from "./bolt_active_learning_ew";
 import { ResamplerBolt } from "./bolt_resampler";
 import { RegularizatorBolt, NormalizatorBolt } from "./bolt_regularizator";
+import { MetricCollectorBolt, MetricNCollectorBolt } from "./bolt_collector";
 
 /** Factory for bolts in this module */
 export function createBolts(subtype: string): q.IBolt {
@@ -16,6 +17,8 @@ export function createBolts(subtype: string): q.IBolt {
         case "resampler": return new ResamplerBolt();
         case "regularizator": return new RegularizatorBolt();
         case "normalizator": return new NormalizatorBolt();
+        case "metric_collector": return new MetricCollectorBolt();
+        case "metric_collector_n": return new MetricNCollectorBolt();
         case "event_window": return new EventWindowBolt();
         case "nn": return new NearestNeighborBolt();
         case "concat_tags": return new ConcatTagsBolt();
