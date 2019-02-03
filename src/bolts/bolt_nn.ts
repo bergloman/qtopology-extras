@@ -1,8 +1,7 @@
 import * as q from "./qtopology";
 import { NN, NNDense, INNParams } from "../nn";
-import { IGdrRecord } from "../data_objects";
+import { IGdrRecord, IEventCounts } from "../data_objects";
 import { EventDictionary } from "../event_dictionary";
-import { createIEventWindow } from "../event_window_tracker";
 
 const DETECTOR_TYPE = "kNN";
 
@@ -11,16 +10,22 @@ export class NearestNeighborBolt implements q.IBolt {
     private nn: NN | NNDense;
     private emit_cb: q.BoltEmitCallback;
     private source_name: string;
+    private ts_tag: string;
+    private values_tag: string;
 
     constructor() {
         this.nn = null;
         this.emit_cb = null;
         this.source_name = null;
+        this.ts_tag = null;
+        this.values_tag = null;
     }
 
     public init(_name: string, config: any, context: any, callback: q.SimpleCallback) {
         this.emit_cb = config.onEmit;
         this.source_name = config.alert_source_name;
+        this.ts_tag = config.ts_tag || "ts";
+        this.values_tag = config.values_tag || "names";
         if (!context.event_dictionary) {
             context.event_dictionary = new EventDictionary();
         }
@@ -51,17 +56,12 @@ export class NearestNeighborBolt implements q.IBolt {
     }
 
     public receive(data: any, _stream_id: string, callback: q.SimpleCallback) {
-        // handle incoming message, if it is not in IEventWindow format
-        if (!data.names) {
-            const ts = data.ts;
-            delete data.ts;
-            data = createIEventWindow(data, ts, ts);
-        }
-        if (Object.keys(data.names).length == 0) {
+        const values: IEventCounts = data[this.values_tag];
+        if (Object.keys(values).length == 0) {
             // do not process empty windows
             return callback();
         }
-        const res = this.nn.getDistance(data.names, true);
+        const res = this.nn.getDistance(values, true);
         if (res.distance >= 0) {
             const alert: IGdrRecord = {
                 extra_data: res,
@@ -69,7 +69,7 @@ export class NearestNeighborBolt implements q.IBolt {
                     "$alert-source": this.source_name,
                     "$alert-type": DETECTOR_TYPE
                 },
-                ts: data.ts_start,
+                ts: data[this.ts_tag],
                 values: {
                     distance: res.distance
                 }

@@ -87,9 +87,13 @@ export class EventWindowTracker {
             .filter(x => x.ts_d >= this.start_d);
     }
 }
+
+/** Utility function for creating IEventWindow form given data*/
 export function createIEventWindow(map: IEventCounts, end_d: number, start_d: number): IEventWindow {
     return createIEventWindowD(map, new Date(end_d), new Date(start_d));
 }
+
+/** Utility function for creating IEventWindow form given data*/
 export function createIEventWindowD(map: IEventCounts, end_d: Date, start_d: Date): IEventWindow {
     const names = Object.keys(map);
     let vec_len = 0;

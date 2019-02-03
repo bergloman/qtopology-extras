@@ -1,11 +1,11 @@
 import * as q from "./qtopology";
 import { IMetricN, IMetric, IEventWindow } from "../data_objects";
-import { createIEventWindowD, createIEventWindow } from "../event_window_tracker";
+import { createIEventWindow } from "../event_window_tracker";
 
 export class MetricCollectorBolt implements q.IBoltAsync {
 
     private emit_cb: q.BoltAsyncEmitCallback;
-    private curr_ts: Date;
+    private curr_ts: number;
     private curr_obj: any;
 
     constructor() {
@@ -20,10 +20,12 @@ export class MetricCollectorBolt implements q.IBoltAsync {
 
     public async receive(data: any, _stream_id: string): Promise<void> {
         const ddata: IMetric = data as IMetric;
-        if (this.curr_ts != ddata.ts) {
+        const d = ddata.ts.getTime();
+        if (this.curr_ts != d) {
+            console.log(this.curr_ts, d);
             await this.emitCurrent();
             this.curr_obj = {};
-            this.curr_ts = ddata.ts;
+            this.curr_ts = d;
         }
         this.curr_obj[ddata.name] = ddata.val;
     }
@@ -38,7 +40,7 @@ export class MetricCollectorBolt implements q.IBoltAsync {
 
     private async emitCurrent() {
         if (this.curr_obj) {
-            const x: IEventWindow = createIEventWindowD(this.curr_obj, this.curr_ts, this.curr_ts);
+            const x = { values: this.curr_obj, ts: new Date(this.curr_ts) };
             await this.emit_cb(x, null);
         }
     }
