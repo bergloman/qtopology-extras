@@ -22,7 +22,6 @@ export class MetricCollectorBolt implements q.IBoltAsync {
         const ddata: IMetric = data as IMetric;
         const d = ddata.ts.getTime();
         if (this.curr_ts != d) {
-            console.log(this.curr_ts, d);
             await this.emitCurrent();
             this.curr_obj = {};
             this.curr_ts = d;
