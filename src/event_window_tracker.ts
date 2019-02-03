@@ -68,19 +68,7 @@ export class EventWindowTracker {
                 map[e.name]++;
             }
         }
-        const names = Object.keys(map);
-        let vec_len = 0;
-        for (const name of names) {
-            vec_len += map[name] * map[name];
-        }
-        vec_len = Math.sqrt(vec_len);
-        return {
-            names: map,
-            ts_end: new Date(this.end_d),
-            ts_start: new Date(this.start_d),
-            vec_len,
-            vec_len_one_hot: Math.sqrt(names.length)
-        };
+        return createIEventWindow(map, this.end_d, this.start_d);
     }
 
     private addEventInternal(event: IEvent): void {
@@ -99,3 +87,22 @@ export class EventWindowTracker {
             .filter(x => x.ts_d >= this.start_d);
     }
 }
+export function createIEventWindow(map: IEventCounts, end_d: number, start_d: number): IEventWindow {
+    return createIEventWindowD(map, new Date(end_d), new Date(start_d));
+}
+export function createIEventWindowD(map: IEventCounts, end_d: Date, start_d: Date): IEventWindow {
+    const names = Object.keys(map);
+    let vec_len = 0;
+    for (const name of names) {
+        vec_len += map[name] * map[name];
+    }
+    vec_len = Math.sqrt(vec_len);
+    return {
+        names: map,
+        ts_end: end_d,
+        ts_start: start_d,
+        vec_len,
+        vec_len_one_hot: Math.sqrt(names.length)
+    };
+}
+

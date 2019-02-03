@@ -2,6 +2,7 @@ import * as q from "./qtopology";
 import { NN, NNDense, INNParams } from "../nn";
 import { IGdrRecord } from "../data_objects";
 import { EventDictionary } from "../event_dictionary";
+import { createIEventWindow } from "../event_window_tracker";
 
 const DETECTOR_TYPE = "kNN";
 
@@ -50,6 +51,12 @@ export class NearestNeighborBolt implements q.IBolt {
     }
 
     public receive(data: any, _stream_id: string, callback: q.SimpleCallback) {
+        // handle incoming message, if it is not in IEventWindow format
+        if (!data.names) {
+            const ts = data.ts;
+            delete data.ts;
+            data = createIEventWindow(data, ts, ts);
+        }
         if (Object.keys(data.names).length == 0) {
             // do not process empty windows
             return callback();

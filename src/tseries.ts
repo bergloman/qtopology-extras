@@ -38,9 +38,9 @@ export class Resampler {
  * Class that performs regulariation - mapping to interval [0, 1].
  * Actually, it observes predefined number of values, then calculates
  * mean and variance from the samples. After that it maps all incoming data as
- * 
+ *
  * y = 0.5 + (x - mean) / std_var / 3
- * 
+ *
  * This means that the result might be outside [0, 1] interval, but not by much.
  */
 export class Regularizator {
@@ -95,7 +95,7 @@ export class Regularizator {
  * Class that performs normalization - to a distribution that has mean 0 and variance 1.
  * Actually, it observes predefined number of values, then calculates
  * mean and variance from the samples. After that it maps all incoming data as
- * 
+ *
  * y = (x - mean) / std_var
  */
 export class Normalizator {

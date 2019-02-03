@@ -1,5 +1,6 @@
 import * as q from "./qtopology";
-import { IMetricN, IMetric } from "../data_objects";
+import { IMetricN, IMetric, IEventWindow } from "../data_objects";
+import { createIEventWindowD, createIEventWindow } from "../event_window_tracker";
 
 export class MetricCollectorBolt implements q.IBoltAsync {
 
@@ -37,9 +38,7 @@ export class MetricCollectorBolt implements q.IBoltAsync {
 
     private async emitCurrent() {
         if (this.curr_obj) {
-            const x = this.curr_obj;
-            this.curr_obj = null;
-            x.ts = this.curr_ts;
+            const x: IEventWindow = createIEventWindowD(this.curr_obj, this.curr_ts, this.curr_ts);
             await this.emit_cb(x, null);
         }
     }
@@ -81,8 +80,7 @@ export class MetricNCollectorBolt implements q.IBoltAsync {
 
     private async emitCurrent() {
         if (this.curr_obj) {
-            const x = this.curr_obj;
-            this.curr_obj = null;
+            const x: IEventWindow = createIEventWindow(this.curr_obj, this.curr_ts, this.curr_ts);
             await this.emit_cb(x, null);
         }
     }
