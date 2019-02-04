@@ -6,7 +6,7 @@ WORKDIR /srv/github-actions-app
 
 # Clone custom qtopology version
 RUN git clone https://github.com/bergloman/qtopology.git
-RUN cd qtopology && npm run install && npm run build && cd ..
+RUN cd qtopology && npm install && npm run build && cd ..
 
 # Send over the dependency definitions to the container
 RUN mkdir qtopology-extras
