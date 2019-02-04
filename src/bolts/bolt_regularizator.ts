@@ -19,14 +19,17 @@ export class RegularizatorBolt implements q.IBoltAsync {
 
     public async init(_name: string, config: IRegularizatorBoltConfig, _context: any): Promise<void> {
         this.emit_cb = config.onEmit;
-        this.inner = new Regularizator(config.delay, config.reemit_delay);
+        this.inner = new Regularizator(config.delay || 100, !!config.reemit_delay);
     }
 
     public async receive(data: any, _stream_id: string): Promise<void> {
         const ddata: ITsPointN = data as ITsPointN;
         const new_data = this.inner.add(ddata);
         for (const d of new_data) {
-            await this.emit_cb(d, null);
+            const x = Object.assign({}, data);
+            x.ts = d.ts;
+            x.val = d.val;
+            await this.emit_cb(x, null);
         }
     }
 
@@ -51,14 +54,17 @@ export class NormalizatorBolt implements q.IBoltAsync {
 
     public async init(_name: string, config: IRegularizatorBoltConfig, _context: any): Promise<void> {
         this.emit_cb = config.onEmit;
-        this.inner = new Normalizator(config.delay, config.reemit_delay);
+        this.inner = new Normalizator(config.delay || 100, !!config.reemit_delay);
     }
 
     public async receive(data: any, _stream_id: string): Promise<void> {
         const ddata: ITsPointN = data as ITsPointN;
         const new_data = this.inner.add(ddata);
         for (const d of new_data) {
-            await this.emit_cb(d, null);
+            const x = Object.assign({}, data);
+            x.ts = d.ts;
+            x.val = d.val;
+            await this.emit_cb(x, null);
         }
     }
 
