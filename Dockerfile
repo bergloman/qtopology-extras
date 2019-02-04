@@ -6,22 +6,19 @@ WORKDIR /srv/github-actions-app
 
 # Clone custom qtopology version
 RUN git clone https://github.com/bergloman/qtopology.git
-RUN cd qtopology
-RUN npm run install
-RUN npm run build
-RUN cd ..
+RUN cd qtopology && npm run install && npm run build && cd ..
 
 # Send over the dependency definitions to the container
 RUN mkdir qtopology-extras
 RUN cd qtopology-extras
-COPY package.json ./
-COPY package-lock.json ./
+COPY package.json ./qtopology-extras/
+COPY package-lock.json ./qtopology-extras/
 
 # Install the dependencies
-RUN npm install
+RUN cd qtopology-extras && npm install
 
 # Copy the whitelisted files
-COPY . .
+COPY . ./qtopology-extras/
 
-RUN npm run build
-RUN npm run test
+RUN cd qtopology-extras && npm run build
+RUN cd qtopology-extras && npm run test
