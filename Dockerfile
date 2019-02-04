@@ -1,19 +1,19 @@
 FROM node:10.14.1
 
 # Setup the working directory
-RUN mkdir /srv
-WORKDIR /srv
+RUN mkdir /srv/github-actions-app
+WORKDIR /srv/github-actions-app
+
+# Clone custom qtopology version
 RUN git clone https://github.com/bergloman/qtopology.git
 RUN cd qtopology
 RUN npm run install
 RUN npm run build
-
-# Setup the working directory
-RUN mkdir /srv/qtopology-extras
-WORKDIR /srv/qtopology-extras
+RUN cd ..
 
 # Send over the dependency definitions to the container
-
+RUN mkdir qtopology-extras
+RUN cd qtopology-extras
 COPY package.json ./
 COPY package-lock.json ./
 
