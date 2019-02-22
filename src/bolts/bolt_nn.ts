@@ -1,5 +1,5 @@
 import * as q from "./qtopology";
-import { NN, NNDense, INNParams } from "../nn";
+import { NNSparse, NNDense, INNParams } from "../nn";
 import { IGdrRecord, IEventCounts } from "../data_objects";
 import { EventDictionary } from "../event_dictionary";
 
@@ -7,7 +7,7 @@ const DETECTOR_TYPE = "kNN";
 
 export class NearestNeighborBolt implements q.IBolt {
 
-    private nn: NN | NNDense;
+    private nn: NNSparse | NNDense;
     private emit_cb: q.BoltEmitCallback;
     private source_name: string;
     private ts_tag: string;
@@ -38,7 +38,7 @@ export class NearestNeighborBolt implements q.IBolt {
         if (config.non_normalized) {
             this.nn = new NNDense(nn_params);
         } else {
-            this.nn = new NN(nn_params);
+            this.nn = new NNSparse(nn_params);
         }
         callback();
     }

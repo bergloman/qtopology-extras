@@ -16,7 +16,8 @@ export interface INnResult {
     kNearest: IEventCounts;
 }
 
-export class NN {
+/** kNN algorithm that poerates on sparse data (BOI) */
+export class NNSparse {
 
     private dictionary: EventDictionary;
     private min_len: number;
@@ -110,7 +111,7 @@ export class NN {
     }
 }
 
-
+/** kNN algorithm that operates on dense data (BOI) */
 export class NNDense {
 
     private dictionary: EventDictionary;
@@ -145,7 +146,6 @@ export class NNDense {
         } else {
             // nearest neighbours, sorted by distance asc
             let svec_closest = [];
-            // for (let a of this.window) {
             for (let i = 0; i < this.window_dense.length; i++) {
                 const a = this.window_dense[i];
                 const d = this.distanceInternalNonNormalized(svec, a);

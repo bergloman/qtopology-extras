@@ -244,7 +244,7 @@ class TimeSeriesPredictionData {
 }
 
 /** This class tracks time-series, resamples it and
- * generates data for prediction - e.g. feature and future horizons
+ * generates data for prediction - e.g. features and future horizons
  */
 export class TimeSeriesPredictionDataCollector {
 
