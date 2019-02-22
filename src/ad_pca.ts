@@ -1,77 +1,34 @@
 import * as qm from "qminer";
-import * as tdigest from "tdigest";
-import { IADProviderScalar, IADProviderTestResult } from "./ad";
-import { ZScore } from "./ema";
-import { IGdrValues } from "./data_objects";
+import { IGdrValues, IEventCounts } from "./data_objects";
 
-/** Result for quantile anomaly detector */
-class QuantileADResult implements IADProviderTestResult {
+/** Result for qunatile anomaly detector */
+class PcaADResult implements IADProviderTestResult {
     public is_anomaly: boolean;
     public values: IGdrValues;
-    public sample: number;
-    public cdf: number;
-    public threshold_cdf_low: number;
-    public threshold_cdf_high: number;
+    public distance: number;
 }
 
 /**
- * Quantile anomaly detector, using QMiner's GK algorithm.
- * NOT WORKING ATM
+ * PCA anomaly detector, using qminer implementation.
  */
-export class QuantileAD implements IADProviderScalar {
+export class PcaAD {
 
-    private gk: any;
-
-    constructor() {
-        this.gk = new qm.analytics.quantiles.Gk({ eps: 0.0001, autoCompress: true });
-    }
-
-    public add(sample: number): void {
-        this.gk.insert(sample);
-    }
-
-    public test(sample: number): any {
-        // let cdf = this.gk.cdf(sample);
-        const cdf = this.gk.quantile(sample);
-        const threshold_cdf_low = 0.02;
-        const threshold_cdf_high = 0.98;
-        const res: QuantileADResult = {
-            cdf,
-            is_anomaly: (cdf < threshold_cdf_low) || (cdf > threshold_cdf_high),
-            sample,
-            threshold_cdf_high,
-            threshold_cdf_low,
-            values: {
-                cdf,
-                sample,
-                threshold_cdf_high,
-                threshold_cdf_low
-            }
-        };
-        return res;
-    }
-}
-
-/**
- * Quantile anomaly detector, using public TDigest library.
- */
-export class QuantileAD2 implements IADProviderScalar {
-
-    private td: any;
     private cnt_before_active: number;
+    private cnt_before_retrain: number;
     private is_active: boolean;
-    private threshold_cdf_low: number;
-    private threshold_cdf_high: number;
 
-    constructor(min_count: number, threshold_low: number, threshold_high: number) {
-        this.td = new tdigest.TDigest();
-        this.cnt_before_active = min_count;
+    constructor(cnt_before_active: number, cnt_before_retrain: number) {
+        this.cnt_before_active = cnt_before_active;
+        this.cnt_before_retrain = cnt_before_retrain;
         this.is_active = (this.cnt_before_active > 0);
-        this.threshold_cdf_low = threshold_low;
-        this.threshold_cdf_high = threshold_high;
     }
 
-    public add(sample: number): void {
+    public add(sample: IEventCounts): void {
+        // add sample to internal list
+
+        // if need to retrain
+        //     retrain, new model, 
+        
         this.td.push(sample);
         if (!this.is_active) {
             this.cnt_before_active--;
@@ -79,7 +36,7 @@ export class QuantileAD2 implements IADProviderScalar {
         }
     }
 
-    public test(sample: number): IADProviderTestResult {
+    public test(sample: IEventCounts): IADProviderTestResult {
         const cdf = this.td.p_rank(sample);
         const res: QuantileADResult = {
             cdf,
