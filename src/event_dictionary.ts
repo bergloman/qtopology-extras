@@ -39,10 +39,13 @@ export class EventDictionary {
      * This method maps event window summary to sparse vector.
      * @param data Event window summary
      */
-    public createSparseVec(data: IEventCounts): SparseVec {
+    public createSparseVec(data: IEventCounts, ignore_unknown?: boolean): SparseVec {
         const res: number[][] = [];
         Object.keys(data)
             .forEach(name => {
+                if (ignore_unknown && !this.map.hasKey(name)) {
+                    return;
+                }
                 this.registerName(name);
                 const dim = this.map.get(name);
                 res.push([dim, data[name]]);
