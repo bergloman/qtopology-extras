@@ -93,34 +93,60 @@ export class PcaModel {
             this.dictionary.registerNames(x);
         });
         // prepare all historical data
-        const mapped_data = collection
-            .map(x => new qm.la.SparseVector(this.dictionary.createSparseVec(x)).full());
+        const dims = this.dictionary.getEventCount();
+        const mapped_data_dense = collection
+            .map(x => new qm.la.SparseVector(this.dictionary.createSparseVec(x), dims))
+            .map(x => x.full());
+        const mapped_data = mapped_data_dense
+            .map(x => x.toArray());
         const matrix = new qm.la.Matrix(mapped_data).transpose();
         // re-generate PCA model
         this.pca_model = new qm.analytics.PCA();
         this.pca_model.fit(matrix);
+
+        // const model = this.pca_model.getModel();
+        // console.log("---- model");
+        // model.P.print();
+        // console.log("---- lambda");
+        // model.lambda.print();
+        // console.log("---- mu");
+        // model.mu.print();
+
         // regenerate t-digest / quantile estimation mechanism
         const res = new tdigest.TDigest();
-        mapped_data.forEach(x => {
-            res.push(this.getReconstructionError(x));
+        mapped_data_dense.forEach(x => {
+            res.push(this.getDistanceInner(x));
         });
         return res;
     }
 
     /** Gets reconstruction error for given example */
     public getReconstructionError(sample: IEventCounts): number {
-        const vec = new qm.la.SparseVector(this.dictionary.createSparseVec(sample)).full();
+        if (!this.dictionary) {
+            return 0;
+        }
+        const vec = new qm.la.SparseVector(
+            this.dictionary.createSparseVec(sample),
+            this.dictionary.getEventCount()
+        ).full();
         return this.getDistanceInner(vec);
     }
 
     /** Calculate the reconstruction distance for given dense vector */
     private getDistanceInner(dense_vec: qm.la.Vector): number {
+        // console.log("-----------");
+        // dense_vec.print();
         const vec_transform = this.pca_model.transform(dense_vec);
+        // vec_transform.print();
         for (let i = Math.round(vec_transform.length * (1 - this.ignored_dims_ratio)); i < vec_transform.length; i++) {
             vec_transform[i] = 0;
         }
-        const vec2 = this.pca_model.transform(vec_transform);
-        const distance = dense_vec.minus(vec2).norm();
+        const vec_reconstructed = this.pca_model.inverseTransform(vec_transform);
+        // vec_reconstructed.print();
+        const diff = dense_vec.minus(vec_reconstructed);
+        // diff.print();
+        const distance = diff.norm();
+        // console.log("distance =", distance);
         return distance;
     }
 }

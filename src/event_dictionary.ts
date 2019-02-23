@@ -17,7 +17,7 @@ export class EventDictionary {
     /** This method regsiters given name into dictionary,
      * if it isn't registered already.
      */
-    public registerName(name: string) : void{
+    public registerName(name: string): void {
         if (!this.map.hasKey(name)) {
             this.map.put(name, this.counter);
             this.inv_map.put(this.counter, name);
