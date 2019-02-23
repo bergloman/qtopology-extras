@@ -33,6 +33,7 @@ export class PcaAD {
         this.dictionary = null;
     }
 
+    /** Adds sample to internal storage */
     public add(sample: IEventCounts): void {
         // TODO get distance
         const distance = 12;
@@ -52,30 +53,13 @@ export class PcaAD {
             this.retrain_after = this.cnt_before_retrain;
 
             // re-create dictionary
-            this.dictionary = new EventDictionary();
-            this.collection.forEach(x => {
-                this.dictionary.registerNames(x);
-            })
-
-            // prepare all historical data
-            const mapped_data = this.collection
-                .map(x => new qm.la.SparseVector(this.dictionary.createSparseVec(x)).full());
-            const matrix = new qm.la.Matrix(mapped_data).transpose();
-
-            // re-generate PCA model
-            this.pca_model = new qm.analytics.PCA();
-            this.pca_model.fit(matrix);
-
-            // regenerate t-digest / quantile estimation mechanism
-            this.tdigest = new tdigest.TDigest();
-            mapped_data.forEach(x => {
-                this.tdigest.push(this.getDistance(x));
-            });
+            this.retrainModel();
         } else {
             this.retrain_after--;
         }
     }
 
+    /** Tests given sample for anomaly */
     public test(sample: IEventCounts): IADProviderTestResult {
         if (!this.dictionary) {
             return { is_anomaly: false, values: {} };
@@ -95,6 +79,7 @@ export class PcaAD {
         return res;
     }
 
+    /** Calculate the reconstruction distance for given dense vector */
     private getDistance(dense_vec: any) {
         const vec_transform = this.pca_model.transform(dense_vec);
         for (let i = Math.round(vec_transform.length * (1 - this.ignored_dims_ratio)); i < vec_transform.length; i++) {
@@ -103,5 +88,25 @@ export class PcaAD {
         const vec2 = this.pca_model.transform(vec_transform);
         const distance = dense_vec.minus(vec2).norm();
         return distance;
+    }
+
+    /** Re-trains internal PCA model and also re-generates other data structures */
+    private retrainModel() {
+        this.dictionary = new EventDictionary();
+        this.collection.forEach(x => {
+            this.dictionary.registerNames(x);
+        });
+        // prepare all historical data
+        const mapped_data = this.collection
+            .map(x => new qm.la.SparseVector(this.dictionary.createSparseVec(x)).full());
+        const matrix = new qm.la.Matrix(mapped_data).transpose();
+        // re-generate PCA model
+        this.pca_model = new qm.analytics.PCA();
+        this.pca_model.fit(matrix);
+        // regenerate t-digest / quantile estimation mechanism
+        this.tdigest = new tdigest.TDigest();
+        mapped_data.forEach(x => {
+            this.tdigest.push(this.getDistance(x));
+        });
     }
 }
