@@ -14,19 +14,39 @@ export class EventDictionary {
         this.inv_map = new qm.ht.IntStrMap();
     }
 
+    /** This method regsiters given name into dictionary,
+     * if it isn't registered already.
+     */
+    public registerName(name: string): void {
+        if (!this.map.hasKey(name)) {
+            this.map.put(name, this.counter);
+            this.inv_map.put(this.counter, name);
+            this.counter++;
+        }
+    }
+
+    /**
+     * This method pre-registers all names in the data
+     */
+    public registerNames(data: IEventCounts): void {
+        Object.keys(data)
+            .forEach(name => {
+                this.registerName(name);
+            });
+    }
+
     /**
      * This method maps event window summary to sparse vector.
      * @param data Event window summary
      */
-    public createSparseVec(data: IEventCounts): SparseVec {
+    public createSparseVec(data: IEventCounts, ignore_unknown?: boolean): SparseVec {
         const res: number[][] = [];
         Object.keys(data)
             .forEach(name => {
-                if (!this.map.hasKey(name)) {
-                    this.map.put(name, this.counter);
-                    this.inv_map.put(this.counter, name);
-                    this.counter++;
+                if (ignore_unknown && !this.map.hasKey(name)) {
+                    return;
                 }
+                this.registerName(name);
                 const dim = this.map.get(name);
                 res.push([dim, data[name]]);
             });
