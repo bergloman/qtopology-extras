@@ -45,7 +45,8 @@ export class PcaAD {
         }
 
         if (this.retrain_after == 0) {
-            this.tdigest = this.pca_model.retrain(this.collection);
+            this.pca_model = new PcaModel(0.4);
+            this.tdigest = this.pca_model.train(this.collection);
             this.retrain_after = this.cnt_before_retrain;
         } else {
             this.retrain_after--;
@@ -57,6 +58,9 @@ export class PcaAD {
     /** Tests given sample for anomaly */
     public test(sample: IEventCounts, auto_add?: boolean): IADProviderTestResult {
         if (!this.pca_model) {
+            if (auto_add) {
+                this.add(sample);
+            }
             return { is_anomaly: false, values: {} };
         }
 
@@ -65,8 +69,8 @@ export class PcaAD {
         const res: IADProviderTestResult = {
             is_anomaly: this.isActive() && cdf > this.threshold_cdf,
             values: {
-                distance,
                 cdf,
+                distance,
                 threshold_cdf: this.threshold_cdf
             }
         };
@@ -95,13 +99,14 @@ export class PcaModel {
     }
 
     /** Retrains model given new data. It overrides existing model. */
-    public retrain(collection: IEventCounts[]): tdigest.TDigest {
+    public train(collection: IEventCounts[]): tdigest.TDigest {
         // reset dictionary
         this.dictionary = new EventDictionary();
         collection.forEach(x => {
             this.dictionary.registerNames(x);
         });
 
+        const ts_start = Date.now();
         // prepare all historical data
         const dims = this.dictionary.getEventCount();
         const mapped_data_dense = collection
@@ -120,6 +125,8 @@ export class PcaModel {
         mapped_data_dense.forEach(x => {
             res.push(this.getDistanceInner(x));
         });
+        const ts_end = Date.now();
+        console.log(`PCA model re-training took ${ts_end - ts_start} msec`);
         return res;
     }
 
