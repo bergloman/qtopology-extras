@@ -28,7 +28,7 @@ export class PcaAD {
 
         // if need to retrain
         //     retrain, new model, 
-        
+
         this.td.push(sample);
         if (!this.is_active) {
             this.cnt_before_active--;
