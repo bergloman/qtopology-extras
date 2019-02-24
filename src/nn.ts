@@ -16,7 +16,7 @@ export interface INnResult {
     kNearest: IEventCounts;
 }
 
-/** kNN algorithm that poerates on sparse data (BOI) */
+/** kNN algorithm that operates on sparse data (BOI) */
 export class NNSparse {
 
     private dictionary: EventDictionary;
