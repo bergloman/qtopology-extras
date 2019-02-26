@@ -58,7 +58,7 @@ export abstract class AnomalyDetectorBaseBolt implements q.IBolt {
         if (a.is_anomaly) {
             const alert: IGdrRecord = {
                 extra_data: a.extra_data || data.extra_data,
-                tags: data.tags,
+                tags: data.tags || {},
                 ts: data.ts,
                 values: a.values
             };
