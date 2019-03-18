@@ -6,7 +6,7 @@ import {
     SparseVec, LearningExample
 } from "./data_objects";
 import { EventDictionary } from "./event_dictionary";
-import { Triplet } from "./utils";
+// import { Triplet } from "./utils";
 
 const DETECTOR_TYPE = "SupervisedSVM";
 
@@ -19,7 +19,13 @@ export interface IADProviderEventWindowParams {
     classifier_builder: ISparseVecClassiffierBuilder;
 }
 
-type DailyBatchRec = Triplet<IEventWindow, SparseVec, number>;
+// type DailyBatchRec = Triplet<IEventWindow, SparseVec, number>;
+class DailyBatchRec {
+    public event_window: IEventWindow;
+    public sparse_vec: SparseVec;
+    public interestingness1: number;
+    public interestingness2: number;
+}
 
 export class ADProviderEventWindow {
 
@@ -55,10 +61,9 @@ export class ADProviderEventWindow {
         const vec = this.dictionary.createSparseVec(sample.names);
         let result: IGdrRecord = null;
 
-        // default measure of interestingess is the norm of the vector
         const svec = new qm.la.SparseVector(vec);
-        let interestingness = svec.norm();
-
+        const interestingness1 = svec.norm(); // default measure of interestingess is the norm of the vector
+        let interestingness2 = interestingness1; // second interestingess is when classifier returns positive answer
         if (this.classifier) {
             let classification = 0;
             try {
@@ -78,11 +83,16 @@ export class ADProviderEventWindow {
                     ts: sample.ts_start,
                     values: { classification }
                 };
-                interestingness += 1000;
+                interestingness2 += 1000;
             }
         }
 
-        this.daily_batch.push({ val1: sample, val2: vec, val3: interestingness });
+        this.daily_batch.push({
+            event_window: sample,
+            sparse_vec: vec,
+            interestingness1,
+            interestingness2
+        });
         return result;
     }
 
@@ -95,16 +105,20 @@ export class ADProviderEventWindow {
         if (ts > this.next_day_switch) {
             this.setNewDaySwitch(ts);
 
-            // get the most promising examples
-            const db = this.daily_batch
-                .sort((a, b) => b.val3 - a.val3) // sort descending
+            // get the most promising examples by both measures of interestingness
+            const db1 = this.daily_batch
+                .sort((a, b) => b.interestingness1 - a.interestingness1) // sort descending
                 .slice(0, this.top_per_day);
+            const db2 = this.daily_batch
+                .sort((a, b) => b.interestingness2 - a.interestingness2) // sort descending
+                .slice(0, this.top_per_day)
+                .filter(x => db1.indexOf(x) < 0);
 
             // get external classification
-            for (const example of db) {
+            for (const example of db1.concat(db2)) {
                 this.global_batch.push({
-                    val1: example.val2,
-                    val2: this.supervizor.isAnomaly(example.val1) ? 1 : -1
+                    val1: example.sparse_vec,
+                    val2: this.supervizor.isAnomaly(example.event_window) ? 1 : -1
                 });
             }
             const tp = this.global_batch.filter(x => x.val2 > 0).length;
