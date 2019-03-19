@@ -6,7 +6,6 @@ import {
     SparseVec, LearningExample
 } from "./data_objects";
 import { EventDictionary } from "./event_dictionary";
-// import { Triplet } from "./utils";
 
 const DETECTOR_TYPE = "SupervisedSVM";
 
@@ -23,8 +22,9 @@ export interface IADProviderEventWindowParams {
 class DailyBatchRec {
     public event_window: IEventWindow;
     public sparse_vec: SparseVec;
-    public interestingness1: number;
-    public interestingness2: number;
+    public interestingness_unsup: number;
+    public interestingness_undecided: number;
+    public interestingness_confident: number;
 }
 
 export class ADProviderEventWindow {
@@ -62,14 +62,26 @@ export class ADProviderEventWindow {
         let result: IGdrRecord = null;
 
         const svec = new qm.la.SparseVector(vec);
-        const interestingness1 = svec.norm(); // default measure of interestingess is the norm of the vector
-        let interestingness2 = 0; // second interestingess is when classifier returns positive answer
+        const interestingness_unsup = svec.norm(); // default measure of interestingess is the norm of the vector
+        let interestingness_undecided = 0; // second interestingess is when classifier returns positive answer
+        let interestingness_confident = 0;
         if (this.classifier) {
             let classification = 0;
             try {
                 classification = this.classifier.classify(vec);
             } catch (e) {
                 console.log("ERROR");
+                console.log(sample);
+                console.log(e);
+            }
+            let decisionFunction: number = -1;
+            try {
+                // interestingness is the inverse of distance to decision boundary
+                decisionFunction = this.classifier.decisionFunction(vec);
+                interestingness_undecided = 1 / (1 + Math.abs(decisionFunction));
+                interestingness_confident = decisionFunction;
+            } catch (e) {
+                console.log("ERROR in decisionFunction");
                 console.log(sample);
                 console.log(e);
             }
@@ -81,26 +93,17 @@ export class ADProviderEventWindow {
                         "$alert-type": DETECTOR_TYPE
                     },
                     ts: sample.ts_start,
-                    values: { classification }
+                    values: { classification, decisionFunction }
                 };
-                interestingness2 += 1000;
-            }
-            try {
-                // interestingness is the inverse of distance to decision boundary
-                const distance = this.classifier.decisionFunction(vec);
-                interestingness2 = 1 / (1 + Math.abs(distance));
-            } catch (e) {
-                console.log("ERROR in decisionFunction");
-                console.log(sample);
-                console.log(e);
             }
         }
 
         this.daily_batch.push({
             event_window: sample,
             sparse_vec: vec,
-            interestingness1,
-            interestingness2
+            interestingness_unsup,
+            interestingness_undecided,
+            interestingness_confident
         });
         return result;
     }
@@ -114,22 +117,30 @@ export class ADProviderEventWindow {
         if (ts > this.next_day_switch) {
             this.setNewDaySwitch(ts);
 
-            // get the most promising examples by both measures of interestingness
-            const db1 = this.daily_batch
-                .sort((a, b) => b.interestingness1 - a.interestingness1) // sort descending
+            // get the most promising examples by all measures of interestingness
+            let new_examples = this.daily_batch
+                .sort((a, b) => b.interestingness_unsup - a.interestingness_unsup) // sort descending
                 .slice(0, this.top_per_day);
             const db2 = this.daily_batch
-                .sort((a, b) => b.interestingness2 - a.interestingness2) // sort descending
+                .sort((a, b) => b.interestingness_undecided - a.interestingness_undecided) // sort descending
                 .slice(0, this.top_per_day)
-                .filter(x => db1.indexOf(x) < 0);
+                .filter(x => new_examples.indexOf(x) < 0);
+            new_examples = new_examples.concat(db2);
+            const db3 = this.daily_batch
+                .sort((a, b) => b.interestingness_confident - a.interestingness_confident) // sort descending
+                .slice(0, this.top_per_day)
+                .filter(x => new_examples.indexOf(x) < 0);
+            new_examples = new_examples.concat(db3);
 
             // get external classification
-            for (const example of db1.concat(db2)) {
+            //console.log("new_examples", new_examples.length);
+            for (const example of new_examples) {
                 this.global_batch.push({
                     val1: example.sparse_vec,
                     val2: this.supervizor.isAnomaly(example.event_window) ? 1 : -1
                 });
             }
+            //console.log("global_batch", this.global_batch.length);
             const tp = this.global_batch.filter(x => x.val2 > 0).length;
 
             // (re)build classifier if enough data has been collected
