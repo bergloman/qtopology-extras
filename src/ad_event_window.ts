@@ -116,6 +116,8 @@ export class ADProviderEventWindow {
         }
         if (ts > this.next_day_switch) {
             this.setNewDaySwitch(ts);
+            this.daily_batch = this.daily_batch
+                .filter(x => x.sparse_vec.length > 0);
 
             // get the most promising examples by all measures of interestingness
             let new_examples = this.daily_batch
