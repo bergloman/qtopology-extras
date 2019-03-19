@@ -99,6 +99,7 @@ export interface IEventWindowSupervisor {
 /** Binary classifier for sparse vectors */
 export interface ISparseVecClassiffier {
     classify: (arg: SparseVec) => number;
+    decisionFunction: (arg: SparseVec) => number;
 }
 
 /** Factory for binary classifier for sparse vectors */

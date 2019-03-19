@@ -63,7 +63,7 @@ export class ADProviderEventWindow {
 
         const svec = new qm.la.SparseVector(vec);
         const interestingness1 = svec.norm(); // default measure of interestingess is the norm of the vector
-        let interestingness2 = interestingness1; // second interestingess is when classifier returns positive answer
+        let interestingness2 = 0; // second interestingess is when classifier returns positive answer
         if (this.classifier) {
             let classification = 0;
             try {
@@ -84,6 +84,15 @@ export class ADProviderEventWindow {
                     values: { classification }
                 };
                 interestingness2 += 1000;
+            }
+            try {
+                // interestingness is the inverse of distance to decision boundary
+                const distance = this.classifier.decisionFunction(vec);
+                interestingness2 = 1 / (1 + Math.abs(distance));
+            } catch (e) {
+                console.log("ERROR in decisionFunction");
+                console.log(sample);
+                console.log(e);
             }
         }
 
