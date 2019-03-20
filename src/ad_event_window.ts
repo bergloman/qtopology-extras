@@ -100,10 +100,10 @@ export class ADProviderEventWindow {
 
         this.daily_batch.push({
             event_window: sample,
-            sparse_vec: vec,
-            interestingness_unsup,
+            interestingness_confident,
             interestingness_undecided,
-            interestingness_confident
+            interestingness_unsup,
+            sparse_vec: vec
         });
         return result;
     }
@@ -135,14 +135,12 @@ export class ADProviderEventWindow {
             new_examples = new_examples.concat(db3);
 
             // get external classification
-            //console.log("new_examples", new_examples.length);
             for (const example of new_examples) {
                 this.global_batch.push({
                     val1: example.sparse_vec,
                     val2: this.supervizor.isAnomaly(example.event_window) ? 1 : -1
                 });
             }
-            //console.log("global_batch", this.global_batch.length);
             const tp = this.global_batch.filter(x => x.val2 > 0).length;
 
             // (re)build classifier if enough data has been collected
