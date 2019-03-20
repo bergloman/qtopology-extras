@@ -6,7 +6,7 @@ const assert = require("assert");
 const pca = require("../../built/ad_pca");
 const tt = require("./test-utils");
 
-describe.only('PCA', function () {
+describe('PCA', function () {
     describe('PcaModel', function () {
         it('creatable', function () {
             const target = new pca.PcaModel(0.5);
