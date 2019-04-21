@@ -44,16 +44,23 @@ class TimeseriesWindow {
     public getVals(): number[] {
         return this.window.map(x => x.val);
     }
+
+    /** Returns the length of collected data */
+    public getLength(): number {
+        return this.window.length;
+    }
 }
 
-export class TrendChangeDetection {
+export class LongtermChangeDetection {
 
     private window_short: TimeseriesWindow;
     private window_long: TimeseriesWindow;
+    private last_result: mwut.IMannWhitneyUTestResult;
 
     constructor(short: number, long: number) {
         this.window_long = new TimeseriesWindow(long);
         this.window_short = new TimeseriesWindow(short);
+        this.last_result = null;
     }
 
     public add(rec: TsPointN) {
@@ -64,11 +71,18 @@ export class TrendChangeDetection {
     }
 
     public isAnomaly(): boolean {
-        const res = mwut.test(
+        if (this.window_long.getLength() == 0) {
+            return false;
+        }
+        this.last_result = mwut.test(
             this.window_short.getVals(),
             this.window_long.getVals(),
             "two-sided"
         );
-        return res.p < 0.01;
+        return this.last_result.p < 0.01;
+    }
+
+    public getLastAnomalyResults(): any {
+        return this.last_result;
     }
 }

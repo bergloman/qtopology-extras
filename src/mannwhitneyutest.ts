@@ -144,11 +144,16 @@ function statistic(x: number[], y: number[]): any {
     };
 }
 
-export function test(x: number[], y: number[], alt: string, corr?: boolean) {
+export interface IMannWhitneyUTestResult {
+    U: number;
+    p: number;
+}
+
+export function test(x: number[], y: number[], alt: string): IMannWhitneyUTestResult {
     // set default value for alternative
     alt = typeof alt !== "undefined" ? alt : "two-sided";
     // set default value for continuity
-    corr = typeof corr !== "undefined" ? corr : true;
+    // corr = typeof corr !== "undefined" ? corr : true;
     const nx = x.length; // x's size
     const ny = y.length; // y's size
     let f = 1;
@@ -159,11 +164,12 @@ export function test(x: number[], y: number[], alt: string, corr?: boolean) {
     let z = 0;
 
     // mean compute and correct if given
-    if (corr) {
-        mu = (nx * ny / 2) + 0.5;
-    } else {
-        mu = nx * ny / 2;
-    }
+    mu = (nx * ny / 2) + 0.5;
+    // if (corr) {
+    //     mu = (nx * ny / 2) + 0.5;
+    // } else {
+    //     mu = nx * ny / 2;
+    // }
 
     // compute standard deviation using tie correction factor
     const std = Math.sqrt(u.tcf * nx * ny * (nx + ny + 1) / 12);

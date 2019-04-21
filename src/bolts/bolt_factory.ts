@@ -9,6 +9,7 @@ import { ResamplerBolt } from "./bolt_resampler";
 import { RegularizatorBolt, NormalizatorBolt } from "./bolt_regularizator";
 import { MetricCollectorBolt, MetricNCollectorBolt } from "./bolt_collector";
 import { PcaBolt } from "./bolt_pca";
+import { LongtermChangeBolt } from "./bolt_longterm";
 
 /** Factory for bolts in this module */
 export function createBolts(subtype: string): q.IBolt {
@@ -23,6 +24,7 @@ export function createBolts(subtype: string): q.IBolt {
         case "event_window": return new EventWindowBolt();
         case "nn": return new NearestNeighborBolt();
         case "pca": return new PcaBolt();
+        case "longterm_ad": return new LongtermChangeBolt();
         case "concat_tags": return new ConcatTagsBolt();
         case "kafka": return new KafkaBolt();
         case "active_learning_ew": return new ActiveLearningEWBolt();
