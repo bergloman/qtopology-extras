@@ -166,7 +166,7 @@ export class TimeseriesWindowHandler {
         this.useHourOfWeek = false;
     }
 
-    /** Check if this object is tready to emit data */
+    /** Check if this object is ready to emit data */
     public isReady(): boolean {
         return (this.window.length >= this.winLen);
     }
@@ -213,7 +213,7 @@ export class TimeseriesWindowHandler {
         };
     }
 
-    /** Creates timestam features - features that describe time component */
+    /** Creates timestamp features - features that describe time component */
     private createTimestampFeatures(ts: Date): number[] {
         const d = this.getTimestampVals(ts);
         const rec: number[] = [];
