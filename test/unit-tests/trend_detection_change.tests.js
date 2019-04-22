@@ -6,14 +6,14 @@ const assert = require("assert");
 const assertUtils = require("./test-utils");
 const ltca = require("../../built/longterm_change_ad");
 
-describe.only("Longterm-change AD", function () {
+describe("Longterm-change AD", function () {
     describe("simple", function () {
         it("test 1", function () {
             let ts = 1;
             let counter = 0;
             const WINDOW = 50;
             const ROTATION = 5;
-            let ad = new ltca.(WINDOW, 2 * WINDOW);
+            let ad = new ltca.LongtermChangeDetection(WINDOW, 2 * WINDOW);
             for (let i = 0; i < 3 * WINDOW; i++) {
                 ad.add({ ts: ts++, val: counter % ROTATION });
                 counter++;
