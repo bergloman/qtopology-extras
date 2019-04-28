@@ -115,37 +115,53 @@ export class ADProviderEventWindow {
             return;
         }
         if (ts > this.next_day_switch) {
+            // console.log("Day switch", ts);
             this.setNewDaySwitch(ts);
             this.daily_batch = this.daily_batch
                 .filter(x => x.sparse_vec.length > 0);
 
             // get the most promising examples by all measures of interestingness
-            let new_examples = this.daily_batch
+            let new_examples = [];
+            const db1 = this.daily_batch
                 .sort((a, b) => b.interestingness_unsup - a.interestingness_unsup) // sort descending
+                .slice(0, 2 * this.top_per_day)
+                .filter(x => new_examples.indexOf(x) < 0)
                 .slice(0, this.top_per_day);
+            // const len1 = db1.length;
+            this.addNewExamples(db1);
+
+            new_examples = new_examples.concat(db1);
+
             const db2 = this.daily_batch
                 .sort((a, b) => b.interestingness_undecided - a.interestingness_undecided) // sort descending
-                .slice(0, this.top_per_day)
-                .filter(x => new_examples.indexOf(x) < 0);
+                .slice(0, 2 * this.top_per_day)
+                .filter(x => new_examples.indexOf(x) < 0)
+                .slice(0, this.top_per_day);
+            // const len2 = db2.length;
+            this.addNewExamples(db2);
+
             new_examples = new_examples.concat(db2);
+
             const db3 = this.daily_batch
                 .sort((a, b) => b.interestingness_confident - a.interestingness_confident) // sort descending
-                .slice(0, this.top_per_day)
-                .filter(x => new_examples.indexOf(x) < 0);
-            new_examples = new_examples.concat(db3);
+                .slice(0, 2 * this.top_per_day)
+                .filter(x => new_examples.indexOf(x) < 0)
+                .slice(0, this.top_per_day);
+            // const len3 = db3.length;
+
+            this.addNewExamples(db3);
+            // new_examples = new_examples.concat(db3);
+
+            // console.log("-- new examples", len1, len2, len3);
 
             // get external classification
-            for (const example of new_examples) {
-                this.global_batch.push({
-                    val1: example.sparse_vec,
-                    val2: this.supervizor.isAnomaly(example.event_window) ? 1 : -1
-                });
-            }
+            // this.addNewExamples(new_examples);
             const tp = this.global_batch.filter(x => x.val2 > 0).length;
 
             // (re)build classifier if enough data has been collected
             if (this.global_batch.length >= this.min_len && tp > 0) {
                 try {
+                    // console.log("-- rebuilding classifier", this.global_batch.length, tp);
                     this.classifier = this.classifier_builder.build(this.global_batch);
                     fs.writeFileSync(
                         ".\\out\\global_batch.ldjson",
@@ -159,6 +175,19 @@ export class ADProviderEventWindow {
 
             this.daily_batch = [];
         }
+    }
+
+    private addNewExamples(new_examples: DailyBatchRec[]) {
+        const results: boolean[] = [];
+        for (const example of new_examples) {
+            const is_anomaly = this.supervizor.isAnomaly(example.event_window);
+            this.global_batch.push({
+                val1: example.sparse_vec,
+                val2: is_anomaly ? 1 : -1
+            });
+            results.push(is_anomaly);
+        }
+        console.log(results);
     }
 
     private setNewDaySwitch(ts: Date) {
