@@ -79,7 +79,8 @@ export class ADProviderEventWindow {
                 // interestingness is the inverse of distance to decision boundary
                 decisionFunction = this.classifier.decisionFunction(vec);
                 interestingness_undecided = 1 / (1 + Math.abs(decisionFunction));
-                interestingness_confident = decisionFunction;
+                // confident only about positive predictions
+                interestingness_confident = decisionFunction * (classification > 0 ? 1 : 0);
             } catch (e) {
                 console.log("ERROR in decisionFunction");
                 console.log(sample);
