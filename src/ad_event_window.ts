@@ -116,7 +116,7 @@ export class ADProviderEventWindow {
             return;
         }
         if (ts > this.next_day_switch) {
-            // console.log("Day switch", ts);
+            console.log("Day switch", ts);
             this.setNewDaySwitch(ts);
             this.daily_batch = this.daily_batch
                 .filter(x => x.sparse_vec.length > 0);
@@ -188,7 +188,7 @@ export class ADProviderEventWindow {
             });
             results.push(is_anomaly);
         }
-        console.log(results);
+        // console.log(results);
     }
 
     private setNewDaySwitch(ts: Date) {
