@@ -1,5 +1,7 @@
 # QTopology extras
 
+[![npm](https://img.shields.io/npm/v/qtopology-extras.svg)]()
+
 This repository contains analytics extensions to [qtopology](https://github.com/qminer/qtopology) using [QMiner](https://github.com/qminer/qminer).
 
 These extensions are written in `Typescript`.
