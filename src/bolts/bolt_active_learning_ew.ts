@@ -6,6 +6,7 @@ import { EventDictionary } from "../event_dictionary";
 
 export interface IActiveLearningEWBoltConfig extends q.IBoltAsyncConfig {
     new_tag_name: string;
+    top_per_day: number;
 }
 
 export class ActiveLearningEWBolt implements q.IBoltAsync {
@@ -34,7 +35,7 @@ export class ActiveLearningEWBolt implements q.IBoltAsync {
             dictionary: context.event_dictionary,
             min_len: 40,
             supervizor,
-            top_per_day: 3
+            top_per_day: config.top_per_day || 3
         });
     }
 
