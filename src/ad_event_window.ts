@@ -164,11 +164,11 @@ export class ADProviderEventWindow {
                 try {
                     // console.log("-- rebuilding classifier", this.global_batch.length, tp);
                     this.classifier = this.classifier_builder.build(this.global_batch);
-                    fs.writeFileSync(
-                        ".\\out\\global_batch.ldjson",
-                        JSON.stringify(this.global_batch),
-                        { encoding: "utf8" }
-                    );
+                    // fs.writeFileSync(
+                    //     ".\\out\\global_batch.ldjson",
+                    //     JSON.stringify(this.global_batch),
+                    //     { encoding: "utf8" }
+                    // );
                 } catch (e) {
                     console.log(e);
                 }
