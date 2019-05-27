@@ -1,5 +1,5 @@
 import * as qm from "qminer";
-import * as fs from "fs";
+// import * as fs from "fs";
 import {
     IEventWindow, IGdrRecord,
     IEventWindowSupervisor, ISparseVecClassiffierBuilder, ISparseVecClassiffier,
