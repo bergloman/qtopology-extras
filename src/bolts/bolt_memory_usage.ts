@@ -20,7 +20,7 @@ export class MemoryUsageBolt implements q.IBoltAsync {
 
     public heartbeat(): void {
         const now = Date.now();
-        if (now - this.last_ts > 10 * 1000) {
+        if (now - this.last_ts > 5 * 1000) {
             this.printMemoryUsage();
             this.last_ts = now;
         }
@@ -34,6 +34,7 @@ export class MemoryUsageBolt implements q.IBoltAsync {
         const mem = process.memoryUsage();
         const now = Date.now();
         const diff_sec = (now - this.start_ts) / 1000;
-        console.log(`Time=${diff_sec}s Memory=${mem.heapTotal}`);
+        const data = { now, diff_sec, mem: mem.heapTotal };
+        console.log(`**** ${JSON.stringify(data)}`);
     }
 }

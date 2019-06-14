@@ -106,7 +106,7 @@ export class PcaModel {
             this.dictionary.registerNames(x);
         });
 
-        const ts_start = Date.now();
+        // const ts_start = Date.now();
         // prepare all historical data
         const dims = this.dictionary.getEventCount();
         const mapped_data_dense = collection
@@ -125,8 +125,8 @@ export class PcaModel {
         mapped_data_dense.forEach(x => {
             res.push(this.getDistanceInner(x));
         });
-        const ts_end = Date.now();
-        console.log(`PCA model re-training took ${ts_end - ts_start} msec`);
+        // const ts_end = Date.now();
+        // console.log(`PCA model re-training took ${ts_end - ts_start} msec`);
         return res;
     }
 
