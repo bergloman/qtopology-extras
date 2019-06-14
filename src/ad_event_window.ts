@@ -116,7 +116,7 @@ export class ADProviderEventWindow {
             return;
         }
         if (ts > this.next_day_switch) {
-            console.log("Day switch", ts);
+            // console.log("Day switch", ts);
             this.setNewDaySwitch(ts);
             this.daily_batch = this.daily_batch
                 .filter(x => x.sparse_vec.length > 0);
@@ -153,7 +153,7 @@ export class ADProviderEventWindow {
             this.addNewExamples(db3);
             // new_examples = new_examples.concat(db3);
 
-            console.log("-- new examples", len1, len2, len3);
+            //console.log("-- new examples", len1, len2, len3);
 
             // get external classification
             // this.addNewExamples(new_examples);
@@ -162,7 +162,7 @@ export class ADProviderEventWindow {
             // (re)build classifier if enough data has been collected
             if (this.global_batch.length >= this.min_len && tp > 0) {
                 try {
-                    console.log("-- rebuilding classifier", this.global_batch.length, tp);
+                    //console.log("-- rebuilding classifier", this.global_batch.length, tp);
                     this.classifier = this.classifier_builder.build(this.global_batch);
                     // fs.writeFileSync(
                     //     ".\\out\\global_batch.ldjson",
