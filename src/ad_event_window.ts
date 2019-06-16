@@ -128,7 +128,7 @@ export class ADProviderEventWindow {
                 .slice(0, 2 * this.top_per_day)
                 .filter(x => new_examples.indexOf(x) < 0)
                 .slice(0, this.top_per_day);
-            //const len1 = db1.length;
+            // const len1 = db1.length;
             this.addNewExamples(db1);
 
             new_examples = new_examples.concat(db1);
@@ -138,7 +138,7 @@ export class ADProviderEventWindow {
                 .slice(0, 2 * this.top_per_day)
                 .filter(x => new_examples.indexOf(x) < 0)
                 .slice(0, this.top_per_day);
-            //const len2 = db2.length;
+            // const len2 = db2.length;
             this.addNewExamples(db2);
 
             new_examples = new_examples.concat(db2);
@@ -148,12 +148,12 @@ export class ADProviderEventWindow {
                 .slice(0, 2 * this.top_per_day)
                 .filter(x => new_examples.indexOf(x) < 0)
                 .slice(0, this.top_per_day);
-            //const len3 = db3.length;
+            // const len3 = db3.length;
 
             this.addNewExamples(db3);
             // new_examples = new_examples.concat(db3);
 
-            //console.log("-- new examples", len1, len2, len3);
+            // console.log("-- new examples", len1, len2, len3);
 
             // get external classification
             // this.addNewExamples(new_examples);
@@ -162,7 +162,7 @@ export class ADProviderEventWindow {
             // (re)build classifier if enough data has been collected
             if (this.global_batch.length >= this.min_len && tp > 0) {
                 try {
-                    //console.log("-- rebuilding classifier", this.global_batch.length, tp);
+                    // console.log("-- rebuilding classifier", this.global_batch.length, tp);
                     this.classifier = this.classifier_builder.build(this.global_batch);
                     // fs.writeFileSync(
                     //     ".\\out\\global_batch.ldjson",
