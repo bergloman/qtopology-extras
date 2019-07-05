@@ -1,6 +1,7 @@
 import * as q from "./qtopology";
 import { IMetricN } from "../data_objects";
 import { Regularizator, Normalizator } from "../tseries";
+import { Ema } from "../ema";
 
 export interface IRegularizatorBoltConfig extends q.IBoltAsyncConfig {
     delay: number;
@@ -76,6 +77,41 @@ export class NormalizatorBolt implements q.IBoltAsync {
             x.val = d.val;
             await this.emit_cb(x, null);
         }
+    }
+
+    public heartbeat(): void {
+        // empty
+    }
+
+    public async shutdown(): Promise<void> {
+        // empty
+    }
+}
+
+export interface IEmaBoltConfig extends q.IBoltAsyncConfig {
+    alpha: number;
+}
+
+export class EmaBolt implements q.IBoltAsync {
+
+    private emit_cb: q.BoltAsyncEmitCallback;
+    private ema: Ema;
+
+    constructor() {
+        this.emit_cb = null;
+        this.ema = null;
+    }
+
+    public async init(_name: string, config: IEmaBoltConfig, _context: any): Promise<void> {
+        this.emit_cb = config.onEmit;
+        this.ema = new Ema({ alpha: config.alpha || 0.5 });
+    }
+
+    public async receive(data: any, _stream_id: string): Promise<void> {
+        const ts: number = new Date(data.ts).getTime();
+        this.ema.add(data.value, ts);
+        const value = this.ema.getEmaValues()[0];
+        await this.emit_cb({ name: data.name + "_ema", value, ts: data.ts }, null);
     }
 
     public heartbeat(): void {

@@ -5,6 +5,7 @@ import { IGdrRecord } from "../data_objects";
 
 const DETECTOR_TYPE_QS = "quantile";
 const DETECTOR_TYPE_ZS = "zscore";
+const DETECTOR_TYPE_TH = "threshold";
 
 /** Base class for scalar anomaly detector */
 export abstract class AnomalyDetectorBaseBolt implements q.IBolt {
@@ -55,16 +56,31 @@ export abstract class AnomalyDetectorBaseBolt implements q.IBolt {
         }
         const a = this.inner.test(new_data.name, new_data.value);
         this.inner.add(new_data.name, new_data.value);
-        if (a.is_anomaly) {
-            const alert: IGdrRecord = {
-                extra_data: a.extra_data || data.extra_data,
-                tags: data.tags || {},
-                ts: data.ts,
-                values: a.values
-            };
-            alert.tags["$alert-type"] = this.alert_type;
-            alert.tags["$alert-source"] = new_data.name + this.detector_postfix;
-            this.emit_cb(alert, null, callback);
+
+        this.emitCdfIfNeeded(new_data.name, data.ts, a, err => {
+            if (err) {
+                return callback(err);
+            }
+            if (a.is_anomaly) {
+                const alert: IGdrRecord = {
+                    extra_data: a.extra_data || data.extra_data,
+                    tags: data.tags || {},
+                    ts: data.ts,
+                    values: a.values
+                };
+                alert.tags["$alert-type"] = this.alert_type;
+                alert.tags["$alert-source"] = new_data.name + this.detector_postfix;
+                this.emit_cb(alert, null, callback);
+            } else {
+                callback();
+            }
+        });
+    }
+
+    // emit cdf values on special stream
+    private emitCdfIfNeeded(name: string, ts: any, a: t.IADProviderTestResult, callback: q.SimpleCallback): void {
+        if (a.values.cdf !== undefined) {
+            this.emit_cb({ name, ts, value: a.values.cdf }, "cdf", callback);
         } else {
             callback();
         }
@@ -92,7 +108,7 @@ export class AnomalyDetectorQuantileBolt extends AnomalyDetectorBaseBolt {
     }
 }
 
-/** ANomaly detector using ZScore */
+/** Anomaly detector using ZScore */
 export class AnomalyDetectorZScoreBolt extends AnomalyDetectorBaseBolt {
 
     constructor() {
@@ -112,3 +128,33 @@ export class AnomalyDetectorZScoreBolt extends AnomalyDetectorBaseBolt {
         return factory;
     }
 }
+
+/** Anomaly detector using threshold */
+export class AnomalyDetectorThresholdBolt extends AnomalyDetectorBaseBolt {
+
+    constructor() {
+        super();
+    }
+
+    public innerInit(config: any) {
+        const threshold = config.threshold;
+        const above: boolean = (config.alert_if == "above");
+        this.alert_type = DETECTOR_TYPE_TH;
+        const factory: t.IADProviderScalarFactory = {
+            create(): t.IADProviderScalar {
+                return {
+                    add: () => { },
+                    test: sample => {
+                        return {
+                            extra_data: null,
+                            is_anomaly: (above && sample >= threshold) || (!above && sample <= threshold),
+                            values: { threshold, value: sample }
+                        };
+                    }
+                };
+            }
+        };
+        return factory;
+    }
+}
+
