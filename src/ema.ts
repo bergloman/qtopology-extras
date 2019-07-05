@@ -116,3 +116,31 @@ export class ZScore {
         return (x - curr.avg) / curr.stdDev;
     }
 }
+
+/** Parameters for Ema object */
+export interface IEmaSimpleParams {
+    alpha: number;
+}
+
+/** Ema object, performs EMA calculation ignoring the time component. */
+export class EmaSimple {
+
+    private alpha: number;
+    private prev_ema: number;
+    private counter: number;
+
+    constructor(options: IEmaSimpleParams) {
+        this.alpha = options.alpha;
+        this.prev_ema = 0;
+        this.counter = 0;
+    }
+
+    public add(sample: number): number {
+        if (this.counter++ == 0) {
+            this.prev_ema = sample;
+        } else {
+            this.prev_ema = this.alpha * sample + (1 - this.alpha) * this.prev_ema;
+        }
+        return this.prev_ema;
+    }
+}

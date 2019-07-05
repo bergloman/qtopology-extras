@@ -97,13 +97,14 @@ describe('ZScore', function () {
 
 describe('EmaBolt', function () {
     describe('simple', function () {
-        it('1 data', function (done) {
+        it('1 data point', function (done) {
             const inner = async () => {
                 let target = new bolts.EmaBolt();
                 const val = 0.7973296976365404;
                 await target.init(
                     "test",
                     {
+                        alpha: 0.5,
                         onEmit: async (data, stream_id) => {
                             assert.ok(stream_id == null);
                             assert.strictEqual(data.value, val);
@@ -117,6 +118,34 @@ describe('EmaBolt', function () {
                         "value": val
                     },
                     null);
+            };
+            inner()
+                .then(done)
+                .catch(done);
+        });
+        it('3 data points', function (done) {
+            const inner = async () => {
+                let target = new bolts.EmaBolt();
+                const val1 = 1;
+                const val2 = 2;
+                const val3 = 2;
+                const ts1 = Date.parse("2019-07-05T12:34:56Z");
+                const ts2 = ts1 + 5 * 60 * 1000; // +5 min
+                const ts3 = ts2 + 5 * 60 * 1000; // +5 min
+                await target.init(
+                    "test",
+                    {
+                        alpha: 0.5,
+                        onEmit: async (data, stream_id) => {
+                            // assert.ok(stream_id == null);
+                            // assert.ok(data.value == val1 || data.value == val2);
+                            console.log(data, stream_id)
+                        }
+                    },
+                    {});
+                await target.receive({ name: "name1", ts: ts1, value: val1 }, null);
+                await target.receive({ name: "name1", ts: ts2, value: val2 }, null);
+                await target.receive({ name: "name1", ts: ts3, value: val3 }, null);
             };
             inner()
                 .then(done)

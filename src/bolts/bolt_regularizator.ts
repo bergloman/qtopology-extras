@@ -1,7 +1,7 @@
 import * as q from "./qtopology";
 import { IMetricN } from "../data_objects";
 import { Regularizator, Normalizator } from "../tseries";
-import { Ema } from "../ema";
+import { EmaSimple } from "../ema";
 
 export interface IRegularizatorBoltConfig extends q.IBoltAsyncConfig {
     delay: number;
@@ -95,23 +95,28 @@ export interface IEmaBoltConfig extends q.IBoltAsyncConfig {
 export class EmaBolt implements q.IBoltAsync {
 
     private emit_cb: q.BoltAsyncEmitCallback;
-    private ema: Ema;
+    private map: Map<string, EmaSimple>;
+    private alpha: number;
 
     constructor() {
         this.emit_cb = null;
-        this.ema = null;
+        this.map = new Map<string, EmaSimple>();
+        this.alpha = 0.5;
     }
 
     public async init(_name: string, config: IEmaBoltConfig, _context: any): Promise<void> {
         this.emit_cb = config.onEmit;
-        this.ema = new Ema({ alpha: config.alpha || 0.5 });
+        this.alpha = config.alpha || 0.5;
     }
 
     public async receive(data: any, _stream_id: string): Promise<void> {
-        const ts: number = new Date(data.ts).getTime();
-        this.ema.add(data.value, ts);
-        const value = this.ema.getEmaValues()[0];
-        await this.emit_cb({ name: data.name + "_ema", value, ts: data.ts }, null);
+        const name = data.name;
+        if (!this.map.has(name)) {
+            this.map.set(name, new EmaSimple({ alpha: this.alpha }));
+        }
+        const ema = this.map.get(name);
+        const value = ema.add(data.value);
+        await this.emit_cb({ name: name + "_ema", value, ts: data.ts }, null);
     }
 
     public heartbeat(): void {
