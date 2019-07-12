@@ -143,7 +143,9 @@ export class AnomalyDetectorThresholdBolt extends AnomalyDetectorBaseBolt {
         const factory: t.IADProviderScalarFactory = {
             create(): t.IADProviderScalar {
                 return {
-                    add: () => { },
+                    add: () => {
+                        // do nothing
+                    },
                     test: sample => {
                         return {
                             extra_data: null,
