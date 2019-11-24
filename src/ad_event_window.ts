@@ -18,13 +18,13 @@ export interface IADProviderEventWindowParams {
     classifier_builder: ISparseVecClassiffierBuilder;
 }
 
-// type DailyBatchRec = Triplet<IEventWindow, SparseVec, number>;
 class DailyBatchRec {
     public event_window: IEventWindow;
     public sparse_vec: SparseVec;
     public interestingness_unsup: number;
     public interestingness_undecided: number;
     public interestingness_confident: number;
+    public is_true_anomaly: number;
 }
 
 export class ADProviderEventWindow {
@@ -65,6 +65,7 @@ export class ADProviderEventWindow {
         const interestingness_unsup = svec.norm(); // default measure of interestingess is the norm of the vector
         let interestingness_undecided = 0; // second interestingess is when classifier returns positive answer
         let interestingness_confident = 0;
+        const is_true_anomaly = this.supervizor.isAnomaly(sample) ? 1 : 0;
         if (this.classifier) {
             let classification = 0;
             try {
@@ -104,6 +105,7 @@ export class ADProviderEventWindow {
             interestingness_confident,
             interestingness_undecided,
             interestingness_unsup,
+            is_true_anomaly,
             sparse_vec: vec
         });
         return result;
@@ -116,6 +118,8 @@ export class ADProviderEventWindow {
             return;
         }
         if (ts > this.next_day_switch) {
+            const ts_s = ts.toISOString().replace(/\:/g, "").replace(/\-/g, "").slice(0, 8 + 6 + 1);
+            const BUCKETS = 4;
             // console.log("Day switch", ts);
             this.setNewDaySwitch(ts);
             this.daily_batch = this.daily_batch
@@ -125,48 +129,61 @@ export class ADProviderEventWindow {
             let new_examples = [];
             const db1 = this.daily_batch
                 .sort((a, b) => b.interestingness_unsup - a.interestingness_unsup) // sort descending
-                .slice(0, 2 * this.top_per_day)
+                .slice(0, BUCKETS * this.top_per_day)
                 .filter(x => new_examples.indexOf(x) < 0)
                 .slice(0, this.top_per_day);
-            // const len1 = db1.length;
             this.addNewExamples(db1);
-
             new_examples = new_examples.concat(db1);
 
             const db2 = this.daily_batch
                 .sort((a, b) => b.interestingness_undecided - a.interestingness_undecided) // sort descending
-                .slice(0, 2 * this.top_per_day)
+                .slice(0, BUCKETS * this.top_per_day)
                 .filter(x => new_examples.indexOf(x) < 0)
                 .slice(0, this.top_per_day);
-            // const len2 = db2.length;
             this.addNewExamples(db2);
-
             new_examples = new_examples.concat(db2);
 
             const db3 = this.daily_batch
                 .sort((a, b) => b.interestingness_confident - a.interestingness_confident) // sort descending
-                .slice(0, 2 * this.top_per_day)
+                .slice(0, BUCKETS * this.top_per_day)
                 .filter(x => new_examples.indexOf(x) < 0)
                 .slice(0, this.top_per_day);
-            // const len3 = db3.length;
-
             this.addNewExamples(db3);
-            // new_examples = new_examples.concat(db3);
+            new_examples = new_examples.concat(db3);
+
+            const db4 = this.daily_batch
+                .sort((a, b) => b.is_true_anomaly - a.is_true_anomaly) // sort descending
+                .slice(0, BUCKETS * this.top_per_day)
+                .filter(x => new_examples.indexOf(x) < 0)
+                .slice(0, this.top_per_day);
+            this.addNewExamples(db4);
+            new_examples = new_examples.concat(db4);
 
             // console.log("-- new examples", len1, len2, len3);
+            // console.log("-- new examples", this.global_batch);
+            // fs.writeFileSync(
+            //     `.\\out\\global_batch.${ts_s}.ldjson`,
+            //     JSON.stringify(this.global_batch),
+            //     { encoding: "utf8" }
+            // );
 
             // get external classification
             // this.addNewExamples(new_examples);
             const tp = this.global_batch.filter(x => x.val2 > 0).length;
-
+            console.log(`ts: ${ts_s}, all ${this.global_batch.length}, TP: ${tp}`);
             // (re)build classifier if enough data has been collected
             if (this.global_batch.length >= this.min_len && tp > 0) {
                 try {
                     // console.log("-- rebuilding classifier", this.global_batch.length, tp);
                     this.classifier = this.classifier_builder.build(this.global_batch);
+
+                    // const output = this.global_batch.map(x => ({
+                    //     cl: x.val2,
+                    //     vals: x.val1.map(y => this.dictionary.getName(y[0]))
+                    // }));
                     // fs.writeFileSync(
-                    //     ".\\out\\global_batch.ldjson",
-                    //     JSON.stringify(this.global_batch),
+                    //     `.\\out\\global_batch.${ts_s}.ldjson`,
+                    //     JSON.stringify(output, null, "  "),
                     //     { encoding: "utf8" }
                     // );
                 } catch (e) {
