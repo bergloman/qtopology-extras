@@ -151,12 +151,12 @@ export interface IMannWhitneyUTestResult {
 
 export function test(x: number[], y: number[], alt: string): IMannWhitneyUTestResult {
     // set default value for alternative
-    alt = typeof alt !== "undefined" ? alt : "two-sided";
+    alt = alt || "two-sided";
     // set default value for continuity
     // corr = typeof corr !== "undefined" ? corr : true;
     const nx = x.length; // x's size
     const ny = y.length; // y's size
-    let f = 1;
+    const f = (alt == "two-sided" ? 2 : 1); // factor to correct two sided p-value
 
     // test statistic
     const u = statistic(x, y);
@@ -183,11 +183,6 @@ export function test(x: number[], y: number[], alt: string): IMannWhitneyUTestRe
         z = Math.abs((u.big - mu) / std);
     } else {
         console.log("Unknown alternative argument");
-    }
-
-    // factor to correct two sided p-value
-    if (alt == "two-sided") {
-        f = 2;
     }
 
     // compute p-value using CDF of standard normal

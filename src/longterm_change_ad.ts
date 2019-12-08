@@ -56,22 +56,27 @@ export class LongtermChangeDetection {
     private window_short: TimeseriesWindow;
     private window_long: TimeseriesWindow;
     private last_result: mwut.IMannWhitneyUTestResult;
+    private initialized: boolean;
 
     constructor(short: number, long: number) {
         this.window_long = new TimeseriesWindow(long);
         this.window_short = new TimeseriesWindow(short);
         this.last_result = null;
+        this.initialized = false;
     }
 
     public add(rec: TsPointN) {
         const transitions = this.window_short.add(rec);
+        let removed_from_long = 0;
         for (const x of transitions) {
-            this.window_long.add(x);
+            const obsolete = this.window_long.add(x);
+            removed_from_long += obsolete.length;
         }
+        this.initialized = this.initialized || (removed_from_long > 0);
     }
 
     public isAnomaly(): boolean {
-        if (this.window_long.getLength() == 0) {
+        if (!this.initialized) {
             return false;
         }
         this.last_result = mwut.test(
