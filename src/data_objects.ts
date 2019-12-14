@@ -117,3 +117,17 @@ export interface IRegressionBuilder {
     build: (data: LearningExampleDense[]) => IRegression;
 }
 
+/** Returns a random permutation of N numbers - 0..(N-1) */
+export function getRandomPermutation(len: number): number[] {
+    const rsort: number[] = new Array(len);
+    for (let idx = 0; idx < len; idx++) {
+        rsort[idx] = idx;
+    }
+    for (let idx = 0; idx < len; idx++) {
+        const swpIdx = idx + Math.floor(Math.random() * (len - idx));
+        const tmp = rsort[idx];
+        rsort[idx] = rsort[swpIdx];
+        rsort[swpIdx] = tmp;
+    }
+    return rsort;
+}

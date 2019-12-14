@@ -7,6 +7,7 @@ import { EventDictionary } from "../event_dictionary";
 export interface IActiveLearningEWBoltConfig extends q.IBoltAsyncConfig {
     new_tag_name: string;
     top_per_day: number;
+    max_n2p_ratio?: number;
 }
 
 export class ActiveLearningEWBolt implements q.IBoltAsync {
@@ -33,6 +34,7 @@ export class ActiveLearningEWBolt implements q.IBoltAsync {
             alert_source_name: "active-learning-ad",
             classifier_builder: new SparseVecClassifierSVC(),
             dictionary: context.event_dictionary,
+            max_n2p_ratio: config.max_n2p_ratio || -1,
             min_len: 40,
             supervizor,
             top_per_day: config.top_per_day || 3

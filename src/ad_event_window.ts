@@ -3,7 +3,7 @@ import * as qm from "qminer";
 import {
     IEventWindow, IGdrRecord,
     IEventWindowSupervisor, ISparseVecClassiffierBuilder, ISparseVecClassiffier,
-    SparseVec, LearningExample
+    SparseVec, LearningExample, getRandomPermutation
 } from "./data_objects";
 import { EventDictionary } from "./event_dictionary";
 
@@ -14,6 +14,7 @@ export interface IADProviderEventWindowParams {
     alert_source_name: string;
     top_per_day: number;
     min_len: number;
+    max_n2p_ratio: number;
     supervizor: IEventWindowSupervisor;
     classifier_builder: ISparseVecClassiffierBuilder;
 }
@@ -36,6 +37,7 @@ export class ADProviderEventWindow {
     private next_day_switch: Date;
     private top_per_day: number;
     private min_len: number;
+    private max_n2p_ratio: number;
     private supervizor: IEventWindowSupervisor;
     private classifier_builder: ISparseVecClassiffierBuilder;
     private classifier: ISparseVecClassiffier;
@@ -48,6 +50,7 @@ export class ADProviderEventWindow {
         this.next_day_switch = null;
         this.top_per_day = params.top_per_day;
         this.min_len = params.min_len;
+        this.max_n2p_ratio = params.max_n2p_ratio;
 
         this.supervizor = params.supervizor;
         this.classifier_builder = params.classifier_builder;
@@ -175,7 +178,26 @@ export class ADProviderEventWindow {
             if (this.global_batch.length >= this.min_len && tp > 0) {
                 try {
                     // console.log("-- rebuilding classifier", this.global_batch.length, tp);
-                    this.classifier = this.classifier_builder.build(this.global_batch);
+                    let training_data = this.global_batch;
+
+                    if (this.max_n2p_ratio > 0) {
+                        // sample negative example to decrease data imbalance
+                        const positives = training_data.filter(x => x.val2 > 0);
+                        let negatives = training_data.filter(x => x.val2 <= 0);
+
+                        const negatives_allowed = Math.ceil(positives.length * this.max_n2p_ratio);
+                        if (negatives_allowed < negatives.length) {
+                            // we need to subsample negative examples
+                            const permutation = getRandomPermutation(negatives.length);
+                            const negatives_original = negatives;
+                            negatives = new Array(negatives_allowed);
+                            for (let i = 0; i < negatives_allowed; i++) {
+                                negatives[i] = negatives_original[permutation[i]];
+                            }
+                        }
+                        training_data = positives.concat(negatives);
+                    }
+                    this.classifier = this.classifier_builder.build(training_data);
 
                     // const output = this.global_batch.map(x => ({
                     //     cl: x.val2,
