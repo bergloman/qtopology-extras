@@ -17,6 +17,11 @@ export interface IADProviderEventWindowParams {
     max_n2p_ratio: number;
     supervizor: IEventWindowSupervisor;
     classifier_builder: ISparseVecClassiffierBuilder;
+    use_least_conf: boolean;
+    use_most_conf: boolean;
+    use_random_neg: boolean;
+    use_undetected: boolean;
+    use_unsup: boolean;
 }
 
 class DailyBatchRec {
@@ -42,6 +47,11 @@ export class ADProviderEventWindow {
     private supervizor: IEventWindowSupervisor;
     private classifier_builder: ISparseVecClassiffierBuilder;
     private classifier: ISparseVecClassiffier;
+    private use_least_conf: boolean;
+    private use_most_conf: boolean;
+    private use_random_neg: boolean;
+    private use_unsup: boolean;
+    private use_undetected: boolean;
 
     constructor(params: IADProviderEventWindowParams) {
         this.dictionary = params.dictionary;
@@ -52,6 +62,12 @@ export class ADProviderEventWindow {
         this.top_per_day = params.top_per_day;
         this.min_len = params.min_len;
         this.max_n2p_ratio = params.max_n2p_ratio;
+
+        this.use_least_conf = params.use_least_conf;
+        this.use_most_conf = params.use_most_conf;
+        this.use_random_neg = params.use_random_neg;
+        this.use_undetected = params.use_undetected;
+        this.use_unsup = params.use_unsup;
 
         this.supervizor = params.supervizor;
         this.classifier_builder = params.classifier_builder;
@@ -124,7 +140,7 @@ export class ADProviderEventWindow {
         }
         if (ts > this.next_day_switch) {
             const ts_s = ts.toISOString().replace(/\:/g, "").replace(/\-/g, "").slice(0, 8 + 6 + 1);
-            const BUCKETS = 5;
+            const MAX_BUCKETS = 5;
             // console.log("Day switch", ts);
             this.setNewDaySwitch(ts);
             this.daily_batch = this.daily_batch
@@ -134,57 +150,73 @@ export class ADProviderEventWindow {
             let new_examples = [];
 
             // the highest unsupervized score
-            const db1 = this.daily_batch
-                .sort((a, b) => b.interestingness_unsup - a.interestingness_unsup) // sort descending
-                .slice(0, BUCKETS * this.top_per_day)
-                .filter(x => new_examples.indexOf(x) < 0)
-                .slice(0, this.top_per_day);
-            this.addNewExamples(db1);
-            new_examples = new_examples.concat(db1);
+            if (this.use_most_conf) {
+                const db1 = this.daily_batch
+                    .sort((a, b) => b.interestingness_unsup - a.interestingness_unsup) // sort descending
+                    .slice(0, MAX_BUCKETS * this.top_per_day)
+                    .filter(x => new_examples.indexOf(x) < 0)
+                    .slice(0, this.top_per_day);
+                this.addNewExamples(db1);
+                new_examples = new_examples.concat(db1);
+                console.log("-- new examples - most conf", db1.length);
+            }
 
             // the most undecided supervized score
-            const db2 = this.daily_batch
-                .sort((a, b) => b.interestingness_undecided - a.interestingness_undecided) // sort descending
-                .slice(0, BUCKETS * this.top_per_day)
-                .filter(x => new_examples.indexOf(x) < 0)
-                .slice(0, this.top_per_day);
-            this.addNewExamples(db2);
-            new_examples = new_examples.concat(db2);
+            if (this.use_least_conf) {
+                const db2 = this.daily_batch
+                    .sort((a, b) => b.interestingness_undecided - a.interestingness_undecided) // sort descending
+                    .slice(0, MAX_BUCKETS * this.top_per_day)
+                    .filter(x => new_examples.indexOf(x) < 0)
+                    .slice(0, this.top_per_day);
+                this.addNewExamples(db2);
+                new_examples = new_examples.concat(db2);
+                console.log("-- new examples - least conf", db2.length);
+            }
 
             // the most certain supervized score
-            const db3 = this.daily_batch
-                .sort((a, b) => b.interestingness_confident - a.interestingness_confident) // sort descending
-                .slice(0, BUCKETS * this.top_per_day)
-                .filter(x => new_examples.indexOf(x) < 0)
-                .slice(0, this.top_per_day);
-            this.addNewExamples(db3);
-            new_examples = new_examples.concat(db3);
+            if (this.use_unsup) {
+                const db3 = this.daily_batch
+                    .sort((a, b) => b.interestingness_confident - a.interestingness_confident) // sort descending
+                    .slice(0, MAX_BUCKETS * this.top_per_day)
+                    .filter(x => new_examples.indexOf(x) < 0)
+                    .slice(0, this.top_per_day);
+                this.addNewExamples(db3);
+                new_examples = new_examples.concat(db3);
+
+                console.log("-- new examples - unsup", db3.length);
+            }
 
             // append true anomalies if not detected so far
-            // const db4 = this.daily_batch
-            //     .sort((a, b) => b.is_true_anomaly - a.is_true_anomaly) // sort descending
-            //     .slice(0, BUCKETS * this.top_per_day)
-            //     .filter(x => new_examples.indexOf(x) < 0)
-            //     .slice(0, this.top_per_day);
-            // this.addNewExamples(db4);
-            // new_examples = new_examples.concat(db4);
+            if (this.use_undetected) {
+                const db4 = this.daily_batch
+                    .sort((a, b) => b.is_true_anomaly - a.is_true_anomaly) // sort descending
+                    .slice(0, MAX_BUCKETS * this.top_per_day)
+                    .filter(x => new_examples.indexOf(x) < 0)
+                    .slice(0, this.top_per_day);
+                this.addNewExamples(db4);
+                new_examples = new_examples.concat(db4);
+            }
 
-            // // random sample from that day
-            // const daily_sample = getRandomPermutation(this.daily_batch.length);
-            // const db5 = [];
-            // for (let i = 0; i < this.daily_batch.length; i++) {
-            //     const x = this.daily_batch[daily_sample[i]];
-            //     if (new_examples.indexOf(x) < 0) {
-            //         db5.push(x);
-            //         if (db5.length>= this.top_per_day) {
-            //             break;
-            //         }
-            //     }
-            // }
-            // this.addNewExamples(db5);
-            // new_examples = new_examples.concat(db5);
+            // random sample from that day
+            if (this.use_random_neg) {
+                const daily_sample = getRandomPermutation(this.daily_batch.length);
+                const db5 = [];
+                for (let i = 0; i < this.daily_batch.length; i++) {
+                    const x = this.daily_batch[daily_sample[i]];
+                    if (new_examples.indexOf(x) < 0) {
+                        db5.push(x);
+                        if (db5.length >= this.top_per_day) {
+                            break;
+                        }
+                    }
+                }
+                this.addNewExamples(db5);
+                new_examples = new_examples.concat(db5);
 
-            console.log("-- new examples", new_examples.length, db1.length, db2.length, db3.length/*, db5.length*/);
+                console.log("-- new examples - random neg", db5.length);
+            }
+
+            // console.log("-- new examples", new_examples.length, db1.length, db2.length, db3.length/*, db5.length*/);
             // console.log("-- new examples", this.global_batch);
             // fs.writeFileSync(
             //     `.\\out\\global_batch.${ts_s}.ldjson`,
