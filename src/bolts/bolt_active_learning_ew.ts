@@ -35,12 +35,12 @@ export class ActiveLearningEWBolt implements q.IBoltAsync {
                 return context.isDisruption(arg.ts_start.getTime(), arg.ts_end.getTime());
             }
         };
-        let use_least_conf: boolean = (config.use_least_conf !== undefined ? config.use_least_conf : true);
-        let use_most_conf: boolean = (config.use_most_conf !== undefined ? config.use_most_conf : true);
-        let use_random_neg: boolean = (config.use_random_neg !== undefined ? config.use_random_neg : true);
-        let use_unsup: boolean = (config.use_unsup !== undefined ? config.use_unsup : true);
-        let use_undetected: boolean = (config.use_undetected !== undefined ? config.use_undetected : true);
-        
+        const use_least_conf: boolean = (config.use_least_conf !== undefined ? config.use_least_conf : true);
+        const use_most_conf: boolean = (config.use_most_conf !== undefined ? config.use_most_conf : true);
+        const use_random_neg: boolean = (config.use_random_neg !== undefined ? config.use_random_neg : true);
+        const use_unsup: boolean = (config.use_unsup !== undefined ? config.use_unsup : true);
+        const use_undetected: boolean = (config.use_undetected !== undefined ? config.use_undetected : true);
+
         this.ad_ex = new ADProviderEventWindow({
             alert_source_name: "active-learning-ad",
             classifier_builder: new SparseVecClassifierSVC(),
