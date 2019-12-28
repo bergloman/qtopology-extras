@@ -52,6 +52,8 @@ export class ADProviderEventWindow {
     private use_random_neg: boolean;
     private use_unsup: boolean;
     private use_undetected: boolean;
+    private daily_stats: any;
+    private global_stats: any;
 
     constructor(params: IADProviderEventWindowParams) {
         this.dictionary = params.dictionary;
@@ -72,6 +74,9 @@ export class ADProviderEventWindow {
         this.supervizor = params.supervizor;
         this.classifier_builder = params.classifier_builder;
         this.classifier = null;
+
+        this.daily_stats = new qm.analytics.metrics.ClassificationScore();
+        this.global_stats = new qm.analytics.metrics.ClassificationScore();
     }
 
     public process(sample: IEventWindow): IGdrRecord {
@@ -118,6 +123,8 @@ export class ADProviderEventWindow {
                     values: { classification, decisionFunction }
                 };
             }
+            this.daily_stats.push(is_true_anomaly, classification);
+            this.global_stats.push(is_true_anomaly, classification);
         }
 
         this.daily_batch.push({
@@ -139,8 +146,16 @@ export class ADProviderEventWindow {
             return;
         }
         if (ts > this.next_day_switch) {
+
             const ts_s = ts.toISOString().replace(/\:/g, "").replace(/\-/g, "").slice(0, 8 + 6 + 1);
-            const MAX_BUCKETS = 5;
+
+            // output classification scores, reset daily score
+            const fmt = (sc) => `TP=${sc.TP} TN=${sc.TN} FP=${sc.FP} FN=${sc.FN}`;
+            console.log(ts_s, "daily_stats", fmt(this.daily_stats.scores));
+            console.log(ts_s, "global_batch", fmt(this.global_stats.scores));
+            this.daily_stats = new qm.analytics.metrics.ClassificationScore();
+
+            // const MAX_BUCKETS = 5;
             // console.log("Day switch", ts);
             this.setNewDaySwitch(ts);
             this.daily_batch = this.daily_batch
@@ -153,7 +168,7 @@ export class ADProviderEventWindow {
             if (this.use_most_conf) {
                 const db1 = this.daily_batch
                     .sort((a, b) => b.interestingness_unsup - a.interestingness_unsup) // sort descending
-                    .slice(0, MAX_BUCKETS * this.top_per_day)
+                    // .slice(0, MAX_BUCKETS * this.top_per_day)
                     .filter(x => new_examples.indexOf(x) < 0)
                     .slice(0, this.top_per_day);
                 this.addNewExamples(db1);
@@ -165,7 +180,7 @@ export class ADProviderEventWindow {
             if (this.use_least_conf) {
                 const db2 = this.daily_batch
                     .sort((a, b) => b.interestingness_undecided - a.interestingness_undecided) // sort descending
-                    .slice(0, MAX_BUCKETS * this.top_per_day)
+                    // .slice(0, MAX_BUCKETS * this.top_per_day)
                     .filter(x => new_examples.indexOf(x) < 0)
                     .slice(0, this.top_per_day);
                 this.addNewExamples(db2);
@@ -177,24 +192,25 @@ export class ADProviderEventWindow {
             if (this.use_unsup) {
                 const db3 = this.daily_batch
                     .sort((a, b) => b.interestingness_confident - a.interestingness_confident) // sort descending
-                    .slice(0, MAX_BUCKETS * this.top_per_day)
+                    // .slice(0, MAX_BUCKETS * this.top_per_day)
                     .filter(x => new_examples.indexOf(x) < 0)
                     .slice(0, this.top_per_day);
                 this.addNewExamples(db3);
                 new_examples = new_examples.concat(db3);
-
                 console.log("-- new examples - unsup", db3.length);
             }
 
             // append true anomalies if not detected so far
             if (this.use_undetected) {
                 const db4 = this.daily_batch
+                    .filter(x => x.is_true_anomaly)
                     .sort((a, b) => b.is_true_anomaly - a.is_true_anomaly) // sort descending
-                    .slice(0, MAX_BUCKETS * this.top_per_day)
+                    // .slice(0, MAX_BUCKETS * this.top_per_day)
                     .filter(x => new_examples.indexOf(x) < 0)
                     .slice(0, this.top_per_day);
                 this.addNewExamples(db4);
                 new_examples = new_examples.concat(db4);
+                console.log("-- new examples - undetected", db4.length);
             }
 
             // random sample from that day
@@ -212,7 +228,6 @@ export class ADProviderEventWindow {
                 }
                 this.addNewExamples(db5);
                 new_examples = new_examples.concat(db5);
-
                 console.log("-- new examples - random neg", db5.length);
             }
 
@@ -287,6 +302,7 @@ export class ADProviderEventWindow {
     private setNewDaySwitch(ts: Date) {
         const t = new Date(ts.getFullYear(), ts.getMonth(), ts.getDate());
         t.setDate(ts.getDate() + 1);
+        // const t = new Date(ts.getTime() + 6 * 60 * 60 * 1000);
         this.next_day_switch = t;
     }
 }
