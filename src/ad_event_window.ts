@@ -150,7 +150,7 @@ export class ADProviderEventWindow {
             const ts_s = ts.toISOString().replace(/\:/g, "").replace(/\-/g, "").slice(0, 8 + 6 + 1);
 
             // output classification scores, reset daily score
-            const fmt = (sc) => `TP=${sc.TP} TN=${sc.TN} FP=${sc.FP} FN=${sc.FN}`;
+            const fmt = (sc => `TP=${sc.TP} TN=${sc.TN} FP=${sc.FP} FN=${sc.FN}`);
             console.log(ts_s, "daily_stats", fmt(this.daily_stats.scores));
             console.log(ts_s, "global_batch", fmt(this.global_stats.scores));
             this.daily_stats = new qm.analytics.metrics.ClassificationScore();
