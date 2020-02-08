@@ -5,6 +5,7 @@
 const assert = require("assert");
 const assertUtils = require("./test-utils");
 const ad = require("../../built/ad");
+const adq = require("../../built/ad_quantile");
 
 class DummyADFactory {
     constructor(inner) { this.inner = inner; }
@@ -30,6 +31,21 @@ describe('AD', function () {
             let calls = ad_obj.getCalls();
             assert.equal(calls.length, 1);
             assert.deepEqual(calls[0], val1);
+        });
+    });
+    describe('AD Quantile', function () {
+        it('no data', function () {
+            const ad_obj = new adq.QuantileAD2(100, 0.01, 0.99);
+            for (let i = 0; i < 100; i++) {
+                ad_obj.add(0);
+            }
+            const res1 = ad_obj.test(0);
+            assert.equal(res1.is_anomaly, false);
+            ad_obj.add(1);
+            const res2 = ad_obj.test(0);
+            assert.equal(res2.is_anomaly, false);
+            const res3 = ad_obj.test(1);
+            assert.equal(res3.is_anomaly, true);
         });
     });
 });
