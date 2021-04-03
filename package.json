@@ -1,6 +1,6 @@
 {
   "name": "qtopology-extras",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Various utilities",
   "main": "./built/index.js",
   "typings": "./built/index",
@@ -29,7 +29,7 @@
     "kafka-node": "^3.0.1",
     "line-by-line": "^0.1.6",
     "qminer": "^9.2.4",
-    "qtopology": "^2.3.1",
+    "qtopology": "^2.3.2",
     "tdigest": "^0.1.1"
   }
 }
