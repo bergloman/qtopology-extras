@@ -25,7 +25,7 @@
     "typescript-formatter": "^7.2.2"
   },
   "dependencies": {
-    "async": "^2.6.3",
+    "async": "^3.2.2",
     "kafka-node": "^5.0.0",
     "line-by-line": "^0.1.6",
     "qminer": "^9.2.4",
